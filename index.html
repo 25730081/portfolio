@@ -1,0 +1,3706 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>마지막 불씨 — The Last Ember</title>
+<!-- 구글 웹 폰트: 고풍스럽고 가독성 높은 Noto Serif KR 및 Outfit 적용 -->
+<link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Noto+Serif+KR:wght@300;400;500;700&family=Outfit:wght@200;300;400;600&family=Noto+Sans+KR:wght@300;400&display=swap" rel="stylesheet">
+<style>
+/* ══════════════════════════════════════
+   기본 디자인 시스템 & 테마 색상 정의 (CSS 변수)
+   - 서리(Deep Winter)의 깊은 청색과, 대비되는 황금빛 불씨(Ember Gold)를 조화롭게 믹스
+   - HSL 변수를 활용하여 시각적으로 깊고 고급스러운 판타지 무드 연출
+   ══════════════════════════════════════ */
+:root {
+  /* 씬별 동적 테마를 반영하기 위한 변수 */
+  --scene-accent:   #7AABCF; /* 서리빛 푸른색 */
+  --scene-accent2:  #A8CFEA; /* 밝은 청빙색 */
+  --scene-glow:     rgba(80, 140, 200, 0.15);
+  --scene-border:   rgba(100, 160, 210, 0.22);
+  --scene-panel-bg: rgba(2, 6, 18, 0.85); /* 반투명 다크 글래스 */
+  --scene-line:     rgba(80, 130, 190, 0.08);
+  --scene-text:     #d8e8f8; /* 높은 가독성을 위한 서리빛 텍스트 */
+  --scene-text2:    rgba(180, 210, 245, 0.6); /* 보조 텍스트 */
+  --scene-btn-clr:  rgba(120, 190, 255, 0.7);
+  --scene-btn-bdr:  rgba(100, 160, 210, 0.3);
+
+  /* 고정 변수 */
+  --deep-night:  #02050c; /* 깊고 어두운 겨울 밤색 */
+  --space-dark:  #010307;
+  --gold-core:   #ECC96A; /* 맥동하는 불씨 코어 */
+  --gold-aura:   #D4A43A; /* 타오르는 황금빛 */
+  --ember-warm:  #E07840; /* 살아있는 불꽃 주황색 */
+  --ember-dark:  #C8622A;
+  --ice-frost:   #7AABCF;
+  --ice-bright:  #C8E4F8;
+  --blood-crack: #A02020; /* 균열 및 위협의 붉은 색 */
+
+  /* 폰트 패밀리 */
+  --font-serif:  'Gowun Batang', 'Noto Serif KR', serif;
+  --font-sans:   'Outfit', 'Noto Sans KR', sans-serif;
+  
+  /* 고급 장식 효과 */
+  --panel-blur:  blur(25px) saturate(1.7);
+  --metal-shine: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.02) 50%, transparent 100%);
+}
+
+/* ── 씬 상태별 body 테마 클래스 (자바스크립트에서 토글) ── */
+body.pal-winter {
+  --scene-accent:   #7AABCF; --scene-accent2:  #A8CFEA;
+  --scene-glow:     rgba(70,130,210,0.15); --scene-border:   rgba(100,160,220,0.25);
+  --scene-panel-bg: rgba(2, 6, 18, 0.88);
+  --scene-text:     #e2effa; --scene-text2:    rgba(160, 195, 235, 0.65);
+}
+body.pal-ember {
+  --scene-accent:   #C49A4A; --scene-accent2:  #E0B860;
+  --scene-glow:     rgba(180,130,40,0.18); --scene-border:   rgba(180,130,40,0.28);
+  --scene-panel-bg: rgba(6, 4, 1, 0.9);
+  --scene-text:     #f4eada; --scene-text2:    rgba(215, 185, 140, 0.65);
+}
+body.pal-false {
+  --scene-accent:   #E0A030; --scene-accent2:  #F5C060;
+  --scene-glow:     rgba(220,160,40,0.22); --scene-border:   rgba(220,160,40,0.32);
+  --scene-panel-bg: rgba(10, 6, 0, 0.92);
+  --scene-text:     #f7ebd2; --scene-text2:    rgba(225, 180, 100, 0.65);
+}
+body.pal-tower {
+  --scene-accent:   #D4A43A; --scene-accent2:  #ECC96A;
+  --scene-glow:     rgba(212,164,58,0.25); --scene-border:   rgba(212,164,58,0.38);
+  --scene-panel-bg: rgba(5, 4, 2, 0.94);
+  --scene-text:     #fbf0d8; --scene-text2:    rgba(230, 195, 120, 0.68);
+}
+body.pal-dawn {
+  --scene-accent:   #FFD060; --scene-accent2:  #FFE898;
+  --scene-glow:     rgba(255,210,80,0.3); --scene-border:   rgba(255,210,80,0.45);
+  --scene-panel-bg: rgba(8, 4, 0, 0.95);
+  --scene-text:     #fff6e5; --scene-text2:    rgba(245, 210, 140, 0.72);
+}
+
+/* ── 전역 초기화 ── */
+* { margin:0; padding:0; box-sizing:border-box; }
+html, body {
+  width:100%; height:100%;
+  background-color: var(--space-dark);
+  color: var(--scene-text);
+  font-family: var(--font-serif);
+  overflow: hidden;
+  cursor: default;
+  user-select: none;
+}
+
+/* ── 시스템 레이어 ── */
+#snow-cv       { position:fixed; inset:0; pointer-events:none; z-index:2; }
+#world-warmth  { position:fixed; inset:0; pointer-events:none; z-index:3; transition:background 3s ease, opacity 3s ease; opacity:0; }
+#crack-vfx     { position:fixed; inset:0; pointer-events:none; z-index:4; opacity:0; transition:opacity 1.5s; }
+#fade-layer    { position:fixed; inset:0; background:#000; z-index:999; opacity:0; pointer-events:none; transition:opacity 0.7s ease; }
+#fade-layer.on { opacity:1; pointer-events:all; }
+
+/* ══════════════════════════════════════
+   TITLE SCREEN (타이틀 화면)
+   - 아득히 먼 탑의 장엄한 비주얼과 눈보라 연출
+   ══════════════════════════════════════ */
+#title-screen {
+  position:fixed; inset:0; z-index:500;
+  display:flex; flex-direction:column; align-items:center; justify-content:flex-end;
+  padding-bottom:12vh; overflow:hidden;
+}
+#title-canvas { position:absolute; inset:0; z-index:0; }
+.ti-content { position:relative; z-index:10; display:flex; flex-direction:column; align-items:center; }
+.ti-sub-en {
+  font-family: var(--font-sans); font-size:9px; letter-spacing:0.7em;
+  color: var(--scene-accent2); opacity:0.6; text-transform:uppercase; margin-bottom:15px;
+  text-shadow: 0 0 15px rgba(120, 190, 255, 0.4);
+}
+.ti-title {
+  font-family: var(--font-serif); font-size:clamp(52px, 8vw, 84px); font-weight:700;
+  color: #fff; letter-spacing:0.18em; text-align:center;
+  text-shadow:
+    0 0 30px rgba(200, 230, 255, 0.6),
+    0 0 80px rgba(100, 170, 240, 0.3),
+    0 4px 10px rgba(0,0,0,0.9);
+  line-height:1.1; margin-bottom:10px;
+  animation: title-breathe 4s ease-in-out infinite;
+}
+@keyframes title-breathe {
+  0%, 100% { transform: scale(1); filter: brightness(1); }
+  50% { transform: scale(1.02); filter: brightness(1.15); }
+}
+.ti-en {
+  font-family: var(--font-sans); font-size:11px; letter-spacing:0.55em;
+  color: var(--scene-accent2); opacity:0.5; text-transform:uppercase; margin-bottom:32px;
+}
+.ti-divider {
+  width:120px; height:1px;
+  background: linear-gradient(to right, transparent, rgba(160, 210, 255, 0.6), transparent);
+  margin-bottom:32px;
+}
+.ti-tagline {
+  font-family: var(--font-serif); font-size:13px; color: rgba(210, 230, 255, 0.55);
+  letter-spacing:0.12em; font-style:italic; margin-bottom:48px;
+  text-shadow: 0 0 10px rgba(0,0,0,0.5);
+}
+.ti-start {
+  font-family: var(--font-sans); font-size:10px; letter-spacing:0.6em;
+  color: rgba(200, 235, 255, 0.6); text-transform:uppercase;
+  border: 1px solid rgba(160, 220, 255, 0.25); background: rgba(5, 12, 30, 0.4);
+  cursor:pointer; padding:18px 64px; border-radius:4px;
+  backdrop-filter: blur(8px);
+  transition: all 0.5s ease;
+  position:relative; overflow:hidden;
+}
+.ti-start:hover {
+  color: #fff; border-color: var(--scene-accent2);
+  letter-spacing: 0.7em;
+  background: rgba(20, 50, 110, 0.35);
+  box-shadow: 0 0 30px rgba(120, 190, 255, 0.3), inset 0 0 15px rgba(255,255,255,0.05);
+}
+
+/* ── 엔딩 화면 ── */
+#ending-screen {
+  position:fixed; inset:0; z-index:600;
+  display:none; flex-direction:column; align-items:center; justify-content:center; padding:40px;
+  background-color: #000;
+}
+#ending-canvas { position:absolute; inset:0; z-index:0; }
+#ending-screen.on { display:flex; }
+.e-inner {
+  position:relative; z-index:10; display:flex; flex-direction:column;
+  align-items:center; max-width:620px; text-align:center;
+  background: rgba(2, 5, 16, 0.75); border: 1px solid rgba(160, 220, 255, 0.15);
+  padding: 50px 40px; border-radius: 6px; backdrop-filter: blur(20px);
+}
+.e-badge {
+  font-family: var(--font-sans); font-size:9px; letter-spacing:0.4em;
+  padding:6px 20px; margin-bottom:28px; text-transform:uppercase; border-radius:2px;
+}
+.b-true   { border:1px solid rgba(255,210,80,0.5); color:#FFE478; background:rgba(212,164,58,0.08); }
+.b-good   { border:1px solid rgba(120,190,255,0.45); color:#A8CFEA; background:rgba(120,190,255,0.08); }
+.b-normal { border:1px solid rgba(230,230,230,0.2); color:#c8d8ea; background:rgba(255,255,255,0.02); }
+.b-bad    { border:1px solid rgba(180,40,40,0.5); color:#e05050; background:rgba(180,40,40,0.08); }
+.e-title {
+  font-family: var(--font-serif); font-size:32px; font-weight:700;
+  color: #fff; line-height:1.5; margin-bottom:24px;
+  text-shadow: 0 0 15px rgba(255,255,255,0.2);
+}
+.e-text {
+  font-family: var(--font-serif); font-size:14px; line-height:2.6;
+  color: rgba(220, 235, 255, 0.75); margin-bottom:48px;
+}
+.e-rule {
+  width:60px; height:1px;
+  background: linear-gradient(to right, transparent, var(--scene-accent), transparent);
+  margin-bottom:30px;
+}
+.e-rule {
+  width:60px; height:1px;
+  background: linear-gradient(to right, transparent, var(--scene-accent), transparent);
+  margin-bottom:30px;
+}
+.e-btn {
+  font-family: var(--font-sans); font-size:10px; letter-spacing:0.45em;
+  background: rgba(10, 25, 60, 0.45); border: 1px solid rgba(212,164,58,0.25);
+  color: rgba(212,164,58,0.7); padding:16px 44px; cursor:pointer; border-radius:3px;
+  transition: all 0.5s; text-transform:uppercase;
+}
+.e-btn:hover { color: #ffe8aa; border-color: var(--gold-aura); background: rgba(212,164,58,0.15); }
+
+/* ══════════════════════════════════════
+   GAME WRAP & LAYOUT
+   ══════════════════════════════════════ */
+#game-wrap { position:fixed; inset:0; display:none; z-index:10; flex-direction:column; background:#010307; }
+#main-area { flex:1; position:relative; overflow:hidden; min-height:0; display:flex; }
+
+/* ══════════════════════════════════════
+   TOP HUD BAR
+   - AAA급 세련된 판타지 스타일의 메탈릭 리본 바
+   ══════════════════════════════════════ */
+#hud-bar {
+  flex:0 0 56px;
+  display:flex; align-items:center; justify-content:space-between;
+  padding:0 30px; position:relative; z-index:50;
+  background: linear-gradient(to bottom, rgba(3, 8, 20, 0.95) 0%, rgba(1, 3, 10, 0.98) 100%);
+  border-bottom: 1px solid rgba(160, 220, 255, 0.15);
+  box-shadow: 0 4px 25px rgba(0,0,0,0.6);
+}
+#hud-bar::before {
+  content:''; position:absolute; top:0; left:0; right:0; height:1px;
+  background: linear-gradient(to right, transparent, rgba(160, 210, 255, 0.3), rgba(255,255,255,0.5), rgba(160, 210, 255, 0.3), transparent);
+}
+#hud-left { display:flex; align-items:center; }
+#hud-title {
+  font-family: var(--font-serif); font-size:15px; font-weight:700;
+  color: #fff; letter-spacing:0.1em;
+  text-shadow: 0 0 15px rgba(120,190,255,0.4);
+}
+#hud-sep {
+  width:1px; height:16px; margin:0 20px;
+  background: linear-gradient(to bottom, transparent, rgba(160, 220, 255, 0.3), transparent);
+}
+#hud-scene-wrap { display:flex; flex-direction:column; }
+#hud-sid {
+  font-family: var(--font-sans); font-size:8px; letter-spacing:0.3em;
+  color: var(--scene-accent); opacity:0.8; text-transform:uppercase;
+}
+#hud-snm {
+  font-family: var(--font-serif); font-size:12px; color: rgba(255,255,255,0.7);
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:240px;
+}
+
+/* ── HUD 오른쪽: 스탯 시스템 ── */
+#hud-stats { display:flex; align-items:center; gap:12px; }
+.hud-chip {
+  display:flex; align-items:center; gap:8px;
+  padding:6px 14px; background: rgba(5, 12, 30, 0.65);
+  border: 1px solid rgba(120, 190, 255, 0.18); border-radius: 4px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+  transition: all 0.5s ease;
+}
+.hud-chip.pulse {
+  animation: chip-shine 0.6s ease;
+}
+@keyframes chip-shine {
+  0% { border-color: rgba(255,255,255,0.2); box-shadow: 0 0 0px var(--scene-accent); }
+  50% { border-color: var(--scene-accent2); box-shadow: 0 0 12px var(--scene-accent); }
+  100% { border-color: rgba(120, 190, 255, 0.18); box-shadow: none; }
+}
+.hud-chip-icon {
+  font-size:14px; filter: drop-shadow(0 0 6px var(--scene-accent));
+}
+.hud-chip-body { display:flex; flex-direction:column; gap:2px; }
+.hud-chip-label {
+  font-family: var(--font-sans); font-size:7px; letter-spacing:0.2em;
+  color: var(--scene-accent2); text-transform:uppercase;
+}
+.hud-chip-bar-wrap { width:50px; height:3px; background: rgba(255,255,255,0.08); border-radius: 2px; overflow:hidden; }
+.hud-chip-bar { height:100%; transition: width 1s ease; }
+.bar-온기 { background: linear-gradient(to right, var(--ember-dark), var(--ember-warm)); }
+.bar-불씨 { background: linear-gradient(to right, var(--gold-aura), var(--gold-core)); }
+.bar-균열 { background: linear-gradient(to right, #7a1a1a, var(--blood-crack)); }
+.hud-chip-val {
+  font-family: var(--font-sans); font-size:10px; font-weight:600;
+  color: #fff; min-width:24px; text-align:right;
+}
+
+/* ── HUD 우측 끝: 기억 조각 수집 상태 ── */
+#hud-memory-summary {
+  display:flex; align-items:center; gap:8px;
+  padding:6px 14px; background: rgba(20, 15, 5, 0.45);
+  border: 1px solid rgba(212, 164, 58, 0.22); border-radius: 4px;
+}
+.hud-mem-icon { color: var(--gold-core); font-size:12px; filter: drop-shadow(0 0 5px var(--gold-aura)); }
+.hud-mem-val { font-family: var(--font-sans); font-size:10px; color: var(--gold-core); font-weight:600; }
+.hud-menu-btn {
+  font-size: 16px; color: rgba(255,255,255,0.5); cursor: pointer; margin-left: 8px;
+  transition: color 0.3s;
+}
+.hud-menu-btn:hover { color: #fff; }
+
+/* ══════════════════════════════════════
+   LEFT STAGE (시네마틱 영상 영역)
+   - 어둡고 깊은 씬을 연출하며, 이미지가 없는 대신
+     눈보라 캔버스와 입자 효과가 환상적으로 흩날림
+   ══════════════════════════════════════ */
+#stage {
+  flex: 1; position:relative; overflow:hidden;
+  border-radius: 8px; border: 1px solid rgba(160, 220, 255, 0.14);
+  margin: 15px 10px 15px 15px;
+  background-color: #02050c;
+  transition: transform 0.5s ease;
+}
+#stage-bg { position:absolute; inset:0; z-index:0; transition: background 2.5s ease; }
+#scene-art { position:absolute; inset:0; z-index:1; }
+#stage-right-fade {
+  position:absolute; top:0; right:0; bottom:0; width:160px; z-index:8;
+  background: linear-gradient(to right, transparent, rgba(2, 6, 18, 0.3), #010307);
+}
+#stage-bottom-fade {
+  position:absolute; bottom:0; left:0; right:0; height:120px; z-index:8;
+  background: linear-gradient(to bottom, transparent, rgba(2, 6, 18, 0.8));
+}
+#stage-vign {
+  position:absolute; inset:0; z-index:7; pointer-events:none;
+  box-shadow: inset 0 0 120px rgba(0, 0, 0, 0.95);
+}
+
+/* 호랑이 눈 연출 */
+#tiger-eyes {
+  position:absolute; inset:0; z-index:6; pointer-events:none;
+  display:none; align-items:center; justify-content:center;
+}
+.t-eye {
+  width:12px; height:6px; border-radius:50%;
+  background: radial-gradient(circle, #FF5000, #9A0000, transparent);
+  filter: blur(0.5px);
+  box-shadow: 0 0 15px rgba(255, 60, 0, 0.9);
+}
+.t-eyes-wrap { display:flex; gap:36px; transition: transform 3s ease; }
+
+/* ══════════════════════════════════════
+   RIGHT PANEL (스토리 영역)
+   - 극도로 세련된 고대비 글래스모피즘
+   ══════════════════════════════════════ */
+#panel {
+  width: 440px; flex-shrink:0;
+  background: var(--scene-panel-bg);
+  backdrop-filter: var(--panel-blur);
+  -webkit-backdrop-filter: var(--panel-blur);
+  border-left: 1px solid rgba(160, 220, 255, 0.15);
+  border-radius: 8px; margin: 15px 15px 15px 10px;
+  display:flex; flex-direction:column; z-index:15;
+  box-shadow: -10px 0 30px rgba(0,0,0,0.5);
+  transition: background 2.5s ease;
+}
+#panel-head {
+  padding: 20px 24px; border-bottom: 1px solid rgba(160, 220, 255, 0.12);
+  display:flex; align-items:center; gap:12px;
+}
+.ph-rule {
+  width:3px; height:22px;
+  background: linear-gradient(to bottom, var(--scene-accent), var(--scene-accent2));
+  border-radius: 1.5px;
+}
+.ph-texts { display:flex; flex-direction:column; }
+.ph-code {
+  font-family: var(--font-sans); font-size:8px; letter-spacing:0.3em;
+  color: var(--scene-accent); text-transform:uppercase;
+}
+.ph-name {
+  font-family: var(--font-serif); font-size:13px; color: #fff;
+  font-weight:700; letter-spacing:0.04em;
+}
+#script-area {
+  flex:1; overflow-y:auto; padding: 24px; scroll-behavior:smooth;
+}
+#script-area::-webkit-scrollbar { width:2px; }
+#script-area::-webkit-scrollbar-thumb { background: rgba(160, 220, 255, 0.15); }
+
+#choice-area {
+  padding: 18px 24px 24px; border-top: 1px solid rgba(160, 220, 255, 0.12);
+  display:flex; flex-direction:column; gap:10px;
+}
+
+/* ── 스토리 텍스트 연출 스타일 ── */
+.stg {
+  font-family: var(--font-serif); font-size:12px; line-height:2.2;
+  margin-bottom:14px; color: var(--scene-text2);
+  padding-left:10px; border-left:1px solid rgba(120, 190, 255, 0.2);
+}
+.narr {
+  font-family: var(--font-serif); font-size:13px; line-height:2.3;
+  margin-bottom:14px; color: rgba(220, 235, 255, 0.8);
+  font-style: italic;
+}
+.gold-q {
+  color: var(--gold-core); text-shadow: 0 0 10px rgba(212,164,58,0.25);
+}
+.dlg { margin-bottom:16px; display:flex; gap:12px; }
+
+/* 신비롭게 맥동하는 캐릭터 아바타 (CSS + 캔버스로 처리) */
+.char-avatar-container {
+  width: 38px; height: 38px; border-radius: 50%; flex-shrink: 0;
+  position:relative; display:flex; align-items:center; justify-content:center;
+  background: rgba(3, 8, 20, 0.8);
+  border: 1px solid rgba(120,190,255,0.25);
+  box-shadow: 0 0 10px rgba(0,0,0,0.5);
+  overflow: hidden;
+}
+.char-avatar-glow {
+  position:absolute; inset:0; border-radius:50%;
+  box-shadow: inset 0 0 12px currentColor;
+  animation: avatar-breathe 2.5s ease-in-out infinite;
+}
+@keyframes avatar-breathe {
+  0%, 100% { opacity: 0.3; transform: scale(0.95); }
+  50% { opacity: 0.75; transform: scale(1.05); }
+}
+.char-avatar-symbol {
+  font-size: 11px; z-index: 2; font-weight: 600;
+}
+
+/* 화자별 아바타 색상 커스텀 */
+.avatar-윤     { color: var(--ember-warm); }
+.avatar-새벽   { color: var(--ice-bright); }
+.avatar-어머니 { color: var(--gold-core); }
+.avatar-형상   { color: #999; }
+.avatar-설호 { color: #a02020; }
+.avatar-상인   { color: #6bb070; }
+
+.dlg-body { display:flex; flex-direction:column; flex:1; }
+.spk {
+  font-family: var(--font-sans); font-size:9px; letter-spacing:0.2em;
+  font-weight: 600; margin-bottom:4px; text-transform:uppercase;
+}
+.speech {
+  font-family: var(--font-serif); font-size:13.5px; line-height:2.1;
+  color: #fff;
+}
+.inner-v {
+  font-size:11px; font-style:italic; color: var(--scene-accent);
+  margin-bottom:12px; text-align:right;
+}
+.warn-t {
+  font-family: var(--font-sans); font-size:8px; color: var(--blood-crack);
+  letter-spacing:0.25em; text-align:center; padding:8px;
+  animation: alarm-pulse 2s infinite; text-transform:uppercase;
+  text-shadow: 0 0 10px rgba(160, 32, 32, 0.4);
+}
+@keyframes alarm-pulse { 0%, 100% { opacity: 0.35; } 50% { opacity: 0.95; } }
+
+/* ── 선택지 카드 (판타지 룬 스톤 뷰) ── */
+.choice-card {
+  background: rgba(10, 20, 45, 0.45);
+  border: 1px solid rgba(160, 220, 255, 0.15);
+  padding: 14px 18px; cursor: pointer; border-radius: 4px;
+  display:flex; flex-direction:column; gap:5px;
+  position:relative; overflow:hidden;
+  transition: all 0.4s ease;
+}
+.choice-card::before {
+  content:''; position:absolute; left:0; top:0; bottom:0; width:3px;
+  background: linear-gradient(to bottom, var(--scene-accent), var(--scene-accent2));
+  opacity:0; transition: opacity 0.4s;
+}
+.choice-card:hover {
+  background: rgba(20, 45, 90, 0.65);
+  border-color: var(--scene-accent);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+}
+.choice-card:hover::before { opacity:1; }
+.cc-key {
+  font-family: var(--font-sans); font-size:8px; letter-spacing:0.25em;
+  color: var(--scene-accent2); text-transform:uppercase; opacity:0.6;
+}
+.cc-label {
+  font-family: var(--font-serif); font-size:13px; color: #fff;
+  line-height:1.8;
+}
+.cc-effs { display:flex; flex-wrap:wrap; gap:6px; margin-top:4px; }
+.eff {
+  font-family: var(--font-sans); font-size:8px; padding:2px 8px;
+  border-radius: 2px; border: 1px solid; letter-spacing: 0.05em;
+}
+.eff-온기-p { color:var(--ember-warm); border-color:rgba(224,120,64,0.35); background:rgba(224,120,64,0.06); }
+.eff-온기-n { color:#cc6652; border-color:rgba(180,80,60,0.35); background:rgba(180,80,60,0.06); }
+.eff-불씨-p { color:var(--gold-core); border-color:rgba(212,164,58,0.35); background:rgba(212,164,58,0.06); }
+.eff-불씨-n { color:#b59550; border-color:rgba(160,120,40,0.35); background:rgba(160,120,40,0.06); }
+.eff-균열-p { color:#e05252; border-color:rgba(160,60,60,0.35); background:rgba(160,60,60,0.06); }
+.eff-균열-n { color:#50b078; border-color:rgba(50,160,100,0.35); background:rgba(50,160,100,0.06); }
+
+.next-btn {
+  font-family: var(--font-sans); font-size:10px; letter-spacing:0.4em;
+  background: rgba(10, 25, 60, 0.4); border: 1px solid rgba(160, 220, 255, 0.2);
+  color: var(--scene-accent2); padding: 15px; cursor: pointer;
+  border-radius: 4px; text-align:center; text-transform:uppercase;
+  transition: all 0.4s ease;
+}
+.next-btn:hover {
+  background: rgba(20, 50, 110, 0.5);
+  border-color: var(--scene-accent2); color: #fff;
+  box-shadow: 0 0 15px rgba(120,190,255,0.25);
+}
+
+/* ─── PROLOGUE PROGRESS (S0 전용) ─── */
+#s0-progress-wrap {
+  margin-top:20px; padding-top:16px;
+  border-top: 1px solid rgba(160, 220, 255, 0.12);
+  display:flex; flex-direction:column; gap:6px;
+}
+.s0-proceed-label {
+  font-family: var(--font-sans); font-size:8px; letter-spacing:0.4em;
+  color: var(--scene-accent2); opacity:0.5; text-transform:uppercase;
+}
+#s0-progress-bar { width:100%; height:2px; background: rgba(255,255,255,0.08); border-radius: 1px; }
+#s0-progress-fill {
+  width:0%; height:100%;
+  background: linear-gradient(to right, var(--scene-accent), var(--scene-accent2));
+}
+
+.scene-appear {
+  animation: scene-fade-in 1.0s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+@keyframes scene-fade-in {
+  from { opacity:0; transform: translateY(8px); }
+  to { opacity:1; transform: translateY(0); }
+}
+
+/* ══════════════════════════════════════
+   PILGRIMAGE MAP DRAWER (하단 순례 지도 서랍)
+   - 겨울 산맥의 대서사적인 분위기를 담은 실제 대륙 지도
+   ══════════════════════════════════════ */
+#map-drawer {
+  flex: 0 0 auto;
+  position:relative; z-index:30;
+  border-top: 1px solid rgba(160, 220, 255, 0.16);
+  background: linear-gradient(to bottom, rgba(2, 5, 16, 0.98) 0%, rgba(1, 2, 6, 1) 100%);
+  box-shadow: 0 -4px 30px rgba(0,0,0,0.8);
+  height: 48px; /* 닫힘 기본 상태 */
+  transition: height 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
+}
+#map-drawer.open {
+  height: 220px; /* 열릴 때 디테일한 맵이 드러남 */
+}
+
+/* 지도 탭 핸들 */
+#map-tab {
+  height: 48px; display:flex; align-items:center; justify-content:space-between;
+  padding:0 30px; cursor:pointer; user-select:none;
+}
+.map-tab-left { display:flex; align-items:center; gap:12px; }
+.map-tab-icon {
+  font-size:12px; color: var(--scene-accent2);
+  filter: drop-shadow(0 0 6px var(--scene-accent));
+}
+.map-tab-title {
+  font-family: var(--font-sans); font-size:9px; letter-spacing:0.5em;
+  color: rgba(255, 255, 255, 0.6); text-transform:uppercase;
+}
+.map-tab-progress { display:flex; align-items:center; gap:8px; }
+.map-progress-label {
+  font-family: var(--font-sans); font-size:8px; letter-spacing:0.25em;
+  color: rgba(255, 255, 255, 0.45); text-transform:uppercase;
+}
+.map-progress-dots { display:flex; gap:6px; align-items:center; }
+.map-dot {
+  width:6px; height:6px; border-radius:50%;
+  background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
+  transition: all 0.8s ease;
+}
+.map-dot.visited {
+  background: var(--scene-accent); border-color: var(--scene-accent2);
+  box-shadow: 0 0 8px var(--scene-accent);
+}
+.map-dot.current {
+  background: var(--gold-core); border-color: #fff;
+  box-shadow: 0 0 10px var(--gold-core);
+  transform: scale(1.2);
+}
+.map-tab-chevron {
+  font-family: var(--font-sans); font-size:9px; color: rgba(255,255,255,0.3);
+  transition: transform 0.6s, color 0.3s;
+}
+#map-drawer.open .map-tab-chevron { transform: rotate(180deg); color: #fff; }
+
+/* 지도 내부 본체 */
+#map-body {
+  height: 172px; position:relative; overflow:hidden;
+  padding: 10px 30px 20px;
+}
+#map-canvas {
+  position:absolute; inset:0; pointer-events:none; z-index:1;
+}
+#map-nodes {
+  position:relative; height:100%; display:flex; align-items:center; z-index:2;
+}
+
+/* 개별 노드 디자인 */
+.map-node {
+  display:flex; flex-direction:column; align-items:center;
+  position:absolute; transform: translateX(-50%) translateY(-30%);
+  cursor:default; transition: opacity 0.8s ease;
+}
+.map-node.undiscovered { opacity:0; pointer-events:none; }
+.map-node.discovered {
+  opacity:1;
+  animation: node-appear 1.0s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+@keyframes node-appear {
+  0% { opacity:0; transform: translateX(-50%) translateY(-30%) scale(0.6); }
+  100% { opacity:1; transform: translateX(-50%) translateY(-30%) scale(1); }
+}
+
+.node-marker {
+  width:32px; height:32px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  position:relative; transition: all 0.6s ease;
+}
+.node-marker-inner {
+  width:20px; height:20px; border-radius:50%;
+  background: rgba(3, 8, 24, 0.95);
+  border: 1px solid rgba(160, 220, 255, 0.25);
+  display:flex; align-items:center; justify-content:center;
+  font-size:9px; color: rgba(255,255,255,0.4);
+  transition: all 0.6s ease; z-index:2;
+}
+
+/* 노드 방문/현재 상태 */
+.map-node.visited .node-marker-inner {
+  background: rgba(10, 25, 60, 0.9); border-color: var(--scene-accent);
+  color: var(--scene-accent2); box-shadow: 0 0 10px rgba(120, 190, 255, 0.3);
+}
+.map-node.current .node-marker-inner {
+  background: rgba(50, 35, 10, 0.95); border-color: var(--gold-core);
+  color: #fff; font-weight:600;
+  box-shadow: 0 0 15px var(--gold-aura), inset 0 0 8px rgba(212,164,58,0.3);
+  animation: marker-glow-breath 3.5s infinite;
+}
+@keyframes marker-glow-breath { 0%, 100% { box-shadow: 0 0 12px var(--gold-aura); } 50% { box-shadow: 0 0 24px #fff; } }
+
+/* 현재 노드 링 펄스 연출 */
+.node-marker::before {
+  content:''; position:absolute; inset:-5px; border-radius:50%;
+  border: 1px solid transparent; transition: all 0.6s;
+}
+.map-node.current .node-marker::before {
+  border-color: rgba(212, 164, 58, 0.35);
+  animation: ring-ripple 2.2s infinite ease-out;
+}
+@keyframes ring-ripple {
+  0% { transform: scale(0.9); opacity: 0.9; }
+  100% { transform: scale(1.4); opacity: 0; }
+}
+
+.node-label { margin-top:8px; display:flex; flex-direction:column; align-items:center; gap:2px; }
+.node-sid {
+  font-family: var(--font-sans); font-size:7px; letter-spacing:0.25em;
+  color: rgba(255,255,255,0.3); text-transform:uppercase;
+}
+.node-name {
+  font-family: var(--font-serif); font-size:10.5px;
+  color: rgba(220,235,255,0.55); letter-spacing:0.04em;
+  text-align:center;
+}
+.map-node.visited .node-sid { color: var(--scene-accent); }
+.map-node.visited .node-name { color: #fff; }
+.map-node.current .node-sid { color: var(--gold-core); }
+.map-node.current .node-name { color: #fff; font-weight:700; text-shadow:0 0 8px rgba(255,220,100,0.3); }
+
+/* 미발견 노드 */
+.map-node.unknown .node-marker-inner {
+  color: rgba(255,255,255,0.15); border-color: rgba(255,255,255,0.06);
+}
+.map-node.unknown .node-name { color: rgba(255,255,255,0.2); font-style:italic; }
+
+/* 지도 타이틀 플로팅 (열릴 때만 노출) */
+#map-title-tag {
+  position:absolute; left:30px; top:12px; z-index:20;
+  display:flex; flex-direction:column; gap:2px; opacity:0;
+  transition: opacity 0.8s ease;
+}
+#map-drawer.open #map-title-tag { opacity:1; }
+.mtt-en { font-family: var(--font-sans); font-size:7px; letter-spacing:0.4em; color: rgba(255,255,255,0.3); text-transform:uppercase; }
+.mtt-kr { font-family: var(--font-serif); font-size:11px; color: rgba(255,255,255,0.6); }
+
+/* 맵 좌우 비네팅 페이드 */
+#map-body::after {
+  content:''; position:absolute; inset:0; pointer-events:none; z-index:10;
+  background: linear-gradient(to right, #020510 0%, transparent 10%, transparent 90%, #020510 100%);
+}
+
+/* ══════════════════════════════════════
+   EMBER RITUAL (S0 종료 시 불씨 의식)
+   - 극강의 몰입감을 이끌어내는 클릭 폭발 연출
+   ══════════════════════════════════════ */
+#ember-ritual {
+  position:fixed; inset:0; z-index:800;
+  display:none; align-items:center; justify-content:center;
+  background:#000; pointer-events:none;
+}
+#ember-ritual.active { display:flex; pointer-events:all; }
+#ritual-dark {
+  position:absolute; inset:0; background:#000;
+  opacity:0; transition: opacity 2.5s ease; pointer-events:none; z-index:1;
+}
+#ritual-dark.on { opacity:1; }
+#ritual-ember {
+  position:relative; z-index:10; width:120px; height:120px;
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer; opacity:0; transition: opacity 2.0s ease;
+}
+#ritual-ember.show { opacity:1; }
+#ritual-ember-cv { position:absolute; inset:0; border-radius:50%; }
+#ritual-hint {
+  position:absolute; bottom:calc(50% - 90px); left:50%; transform:translateX(-50%);
+  z-index:10; font-family: var(--font-serif); font-size:12px;
+  color: rgba(255, 230, 180, 0); letter-spacing:0.35em; text-align:center;
+  white-space:nowrap; transition: color 2.5s ease; font-style:italic;
+  text-shadow: 0 0 15px rgba(212,164,58,0.7); pointer-events:none;
+}
+#ritual-hint.show { color: rgba(255, 220, 160, 0.7); animation: hint-fade 2.5s ease-in-out infinite; }
+@keyframes hint-fade { 0%, 100% { opacity:0.4; } 50% { opacity:0.95; } }
+#ritual-burst {
+  position:absolute; inset:0; z-index:20;
+  background: radial-gradient(circle at 50% 50%, rgba(255,255,255,0) 0%, transparent 60%);
+  opacity:0; pointer-events:none; transition: opacity 0.15s ease;
+}
+#ritual-burst.on { opacity:1; }
+
+/* ══════════════════════════════════════
+   PARCHMENT MAP REVEAL (양피지 지도 각성)
+   ══════════════════════════════════════ */
+#parchment-overlay {
+  position:fixed; inset:0; z-index:810;
+  display:none; align-items:center; justify-content:center;
+  background: rgba(0,0,0,0.97); pointer-events:none;
+}
+#parchment-overlay.active { display:flex; pointer-events:all; }
+#parchment-wrap {
+  position:relative; width:min(720px, 90vw); height:min(360px, 42vh);
+  overflow:hidden; transform: scaleX(0); opacity:0;
+  transform-origin: center center;
+}
+#parchment-bg {
+  position:absolute; inset:0; border-radius:4px;
+  background:
+    radial-gradient(ellipse 80% 60% at 30% 40%, rgba(160, 120, 45, 0.08) 0%, transparent 60%),
+    linear-gradient(160deg, #090a10 0%, #03050c 50%, #010206 100%);
+  border: 1px solid rgba(212, 164, 58, 0.25);
+  box-shadow:
+    0 0 100px rgba(0,0,0,0.95),
+    inset 0 0 60px rgba(0,0,0,0.6);
+}
+#parchment-canvas { position:absolute; inset:0; border-radius:4px; z-index:5; }
+#parchment-dust { position:absolute; inset:0; border-radius:4px; z-index:6; pointer-events:none; }
+.parchment-edge { position:absolute; top:0; bottom:0; width:22px; z-index:8; pointer-events:none; }
+.parchment-edge-l { left:0; background: linear-gradient(to right, rgba(0,0,0,0.7), transparent); }
+.parchment-edge-r { right:0; background: linear-gradient(to left, rgba(0,0,0,0.7), transparent); }
+#parchment-title {
+  position:absolute; top:20px; left:50%; transform:translateX(-50%);
+  z-index:10; text-align:center; pointer-events:none;
+  opacity:0; transition: opacity 1.8s ease;
+}
+#parchment-title.show { opacity:1; }
+.pt-en { font-family: var(--font-sans); font-size:8px; letter-spacing:0.8em; color: rgba(212, 164, 58, 0.45); text-transform:uppercase; display:block; margin-bottom:4px; }
+.pt-kr { font-family: var(--font-serif); font-size:15px; font-weight:700; color: rgba(255, 225, 150, 0.85); letter-spacing:0.2em; display:block; text-shadow: 0 0 15px rgba(212,164,58,0.4); }
+
+#parchment-continue {
+  position:absolute; bottom:18px; left:50%; transform:translateX(-50%);
+  z-index:10; font-family: var(--font-sans); font-size:9px; letter-spacing:0.6em;
+  color: rgba(212, 164, 58, 0); text-transform:uppercase; white-space:nowrap;
+  cursor:pointer; padding:10px 32px; border-radius:3px;
+  border: 1px solid rgba(212, 164, 58, 0);
+  background: rgba(15, 10, 5, 0);
+  transition: all 1.5s ease;
+}
+#parchment-continue.show {
+  color: rgba(212, 164, 58, 0.75); border-color: rgba(212, 164, 58, 0.35);
+  background: rgba(212, 164, 58, 0.08);
+  animation: cont-pulse 3s infinite;
+}
+@keyframes cont-pulse { 0%, 100% { opacity:0.6; } 50% { opacity:1; } }
+.map-memory-shard {
+  position:absolute; z-index:9; font-family: var(--font-serif); font-size:9px;
+  color: rgba(212, 164, 58, 0.55); font-style:italic; pointer-events:none;
+  animation: shard-hover 4s ease-in-out infinite;
+  text-shadow: 0 0 8px rgba(212,164,58,0.3);
+}
+@keyframes shard-hover {
+  0%, 100% { transform: translateY(0); opacity:0.4; }
+  50% { transform: translateY(-6px); opacity:0.8; }
+}
+</style>
+</head>
+<body class="pal-winter">
+
+<!-- 파티클 시스템용 캔버스 & VFX 요소들 -->
+<canvas id="snow-cv"></canvas>
+<div id="world-warmth"></div>
+<div id="warmth-glow"></div>
+<div id="crack-vfx"></div>
+<div id="fade-layer"></div>
+
+<!-- ══ 불씨 의식 오버레이 (S0→S1 전환 시 암전) ══ -->
+<div id="ember-ritual">
+  <div id="ritual-dark"></div>
+  <div id="ritual-ember">
+    <canvas id="ritual-ember-cv"></canvas>
+  </div>
+  <div id="ritual-burst"></div>
+  <div id="ritual-hint">불씨를 깨워라</div>
+</div>
+
+<!-- ══ 양피지 지도 공개 오버레이 ══ -->
+<div id="parchment-overlay">
+  <div id="parchment-wrap">
+    <div id="parchment-bg"></div>
+    <div class="parchment-edge parchment-edge-l"></div>
+    <div class="parchment-edge parchment-edge-r"></div>
+    <canvas id="parchment-canvas"></canvas>
+    <canvas id="parchment-dust"></canvas>
+    <div id="parchment-title">
+      <span class="pt-en">The Pilgrimage Begins</span>
+      <span class="pt-kr">불씨의 여정</span>
+    </div>
+    <div id="parchment-continue">여정을 시작하다</div>
+  </div>
+</div>
+
+<!-- ══ 타이틀 화면 ══ -->
+<div id="title-screen">
+  <canvas id="title-canvas"></canvas>
+  <!-- 배경 영상 -->
+  <video id="title-video" autoplay muted loop playsinline
+    style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1;opacity:0.55;">
+    <source src="VIDEO/cover.mp4" type="video/mp4">
+  </video>
+  <!-- 영상 위 어두운 그라데이션 오버레이 -->
+  <div style="position:absolute;inset:0;z-index:2;background:linear-gradient(to bottom,rgba(1,3,12,0.35) 0%,rgba(1,3,12,0.15) 50%,rgba(1,3,18,0.75) 100%);pointer-events:none;"></div>
+  <div class="ti-content" style="z-index:10;">
+    <p class="ti-sub-en">A Cinematic Folktale Experience</p>
+    <h1 class="ti-title">마지막 불씨</h1>
+    <p class="ti-en">The Last Ember</p>
+    <div class="ti-divider"></div>
+    <p class="ti-tagline">끝없는 겨울 속, 마지막 희망을 찾아서.</p>
+    <button class="ti-start" id="start-btn">불씨의 기록 열기</button>
+  </div>
+</div>
+
+<!-- ══ 오프닝 시퀀스 오버레이 ══ -->
+<div id="opening-seq" style="display:none; position:fixed; inset:0; z-index:550; background:#000; flex-direction:column; align-items:center; justify-content:center; overflow:hidden;">
+
+  <!-- 배경 눈송이 + 탑 캔버스 -->
+  <canvas id="opening-canvas" style="position:absolute;inset:0;z-index:0;"></canvas>
+
+  <!-- 중앙 불씨 -->
+  <div id="opening-ember" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:5;pointer-events:none;">
+    <canvas id="ember-cv" width="120" height="120"></canvas>
+  </div>
+
+  <!-- 텍스트 스크롤 영역 -->
+  <div id="opening-text-wrap" style="
+    position:absolute; inset:0; z-index:6;
+    display:flex; align-items:center; justify-content:center;
+    pointer-events:none; opacity:0; transition:opacity 1.5s ease;
+  ">
+    <div id="opening-text-inner" style="
+      font-family:'Gowun Batang','Noto Serif KR',serif;
+      font-size:clamp(14px,1.8vw,20px);
+      color:rgba(245,240,230,0.88);
+      line-height:2.8;
+      text-align:center;
+      letter-spacing:0.08em;
+      text-shadow:0 0 20px rgba(0,0,0,0.9), 0 2px 8px rgba(0,0,0,1);
+      max-width:640px;
+      padding:0 40px;
+      position:absolute;
+      width:100%;
+    "></div>
+  </div>
+
+  <!-- 시작 버튼 (3단계) -->
+  <div id="opening-final-btn" style="
+    position:absolute; bottom:18vh; left:50%; transform:translateX(-50%);
+    z-index:10; opacity:0; pointer-events:none;
+    transition:opacity 1.8s ease;
+    display:flex; flex-direction:column; align-items:center; gap:20px;
+  ">
+    <canvas id="particle-cv" width="320" height="80" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;z-index:0;opacity:0.7;"></canvas>
+    <button id="prologue-start-btn" style="
+      font-family:'Gowun Batang','Noto Serif KR',serif;
+      font-size:12px; letter-spacing:0.5em;
+      color:rgba(240,210,130,0.85);
+      border:1px solid rgba(212,164,58,0.35);
+      background:rgba(8,5,1,0.5);
+      padding:18px 48px; cursor:pointer; border-radius:3px;
+      backdrop-filter:blur(10px);
+      transition:all 0.6s ease;
+      position:relative; z-index:2;
+      text-shadow:0 0 12px rgba(212,164,58,0.5);
+      box-shadow:0 0 20px rgba(212,164,58,0.08);
+    ">「어머니의 마지막 기록을 듣는다」</button>
+  </div>
+</div>
+
+<!-- ══ 엔딩 화면 ══ -->
+<div id="ending-screen">
+  <canvas id="ending-canvas"></canvas>
+  <!-- 엔딩별 배경 영상 -->
+  <video id="end-true-video" src="VIDEO/END_3.mp4" autoplay muted loop playsinline
+    style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;opacity:0;transition:opacity 1.5s ease;pointer-events:none;"></video>
+  <video id="end-good-video" src="VIDEO/END_1.mp4" autoplay muted loop playsinline
+    style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;opacity:0;transition:opacity 1.5s ease;pointer-events:none;"></video>
+  <video id="end-normal-video" src="VIDEO/END_2.mp4" autoplay muted loop playsinline
+    style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;opacity:0;transition:opacity 1.5s ease;pointer-events:none;"></video>
+  <video id="end-bad-video" src="VIDEO/GAME%20OVER.mp4" autoplay muted loop playsinline
+    style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;opacity:0;transition:opacity 1.5s ease;pointer-events:none;"></video>
+  <div class="e-inner">
+    <div class="e-rule"></div>
+    <div id="e-badge" class="e-badge"></div>
+    <h2 id="e-title" class="e-title"></h2>
+    <p id="e-text" class="e-text"></p>
+    <button class="e-btn" id="restart-btn">다시 걸어가다</button>
+  </div>
+</div>
+
+<!-- ══ 게임 화면 메인 레이아웃 ══ -->
+<div id="game-wrap">
+
+  <!-- HUD 상단 바 -->
+  <div id="hud-bar">
+    <div id="hud-left">
+      <span id="hud-title">마지막 불씨</span>
+      <div id="hud-sep"></div>
+      <div id="hud-scene-wrap">
+        <span id="hud-sid">S0</span>
+        <span id="hud-snm">프롤로그</span>
+      </div>
+    </div>
+
+    <div id="hud-stats">
+      <!-- 온기 스탯 칩 -->
+      <div class="hud-chip" id="chip-온기">
+        <span class="hud-chip-icon" style="color:var(--ember-warm)">🔥</span>
+        <div class="hud-chip-body">
+          <span class="hud-chip-label">온기</span>
+          <div class="hud-chip-bar-wrap">
+            <div class="hud-chip-bar bar-온기" id="sb-온기" style="width:100%"></div>
+          </div>
+        </div>
+        <span class="hud-chip-val" id="hv-온기">100</span>
+      </div>
+
+      <!-- 불씨 스탯 칩 -->
+      <div class="hud-chip" id="chip-불씨">
+        <span class="hud-chip-icon" style="color:var(--gold-core)">✦</span>
+        <div class="hud-chip-body">
+          <span class="hud-chip-label">불씨</span>
+          <div class="hud-chip-bar-wrap">
+            <div class="hud-chip-bar bar-불씨" id="sb-불씨" style="width:50%"></div>
+          </div>
+        </div>
+        <span class="hud-chip-val" id="hv-불씨">50</span>
+      </div>
+
+      <!-- 균열 스탯 칩 -->
+      <div class="hud-chip" id="chip-균열">
+        <span class="hud-chip-icon" style="color:#e05252">❄</span>
+        <div class="hud-chip-body">
+          <span class="hud-chip-label">균열</span>
+          <div class="hud-chip-bar-wrap">
+            <div class="hud-chip-bar bar-균열" id="sb-균열" style="width:0%"></div>
+          </div>
+        </div>
+        <span class="hud-chip-val" id="hv-균열">0</span>
+      </div>
+
+      <div id="hud-sep"></div>
+
+      <!-- 기억의 조각 칩 -->
+      <div id="hud-memory-summary">
+        <span class="hud-mem-icon">💎</span>
+        <span class="hud-mem-val" id="hud-mem-val">기억의 조각 0/6</span>
+      </div>
+      <span class="hud-menu-btn">☰</span>
+    </div>
+  </div>
+
+  <!-- 메인 영역 (비디오 스테이지 + 스토리 패널) -->
+  <div id="main-area">
+    <!-- 영상 영역 (이미지는 빈 칸으로 두고 잔잔한 입자가 연출됨) -->
+    <div id="stage">
+      <div id="stage-bg" class="sbg-S0"></div>
+      <!-- S0 전용 배경 영상 -->
+      <video id="s0-video" src="VIDEO/S0.mp4" autoplay muted loop playsinline
+        style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1;opacity:0;transition:opacity 1.2s ease;pointer-events:none;">
+      </video>
+      <!-- S1 전용 배경 영상 -->
+      <video id="s1-video" src="VIDEO/S1.mp4" autoplay muted loop playsinline
+        style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1;opacity:0;transition:opacity 1.2s ease;pointer-events:none;">
+      </video>
+      <!-- S2 전용 배경 영상 -->
+      <video id="s2-video" src="VIDEO/S2.mp4" autoplay muted loop playsinline
+        style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1;opacity:0;transition:opacity 1.2s ease;pointer-events:none;">
+      </video>
+      <!-- S3 전용 배경 영상 -->
+      <video id="s3-video" src="VIDEO/S3.mp4" autoplay muted loop playsinline
+        style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1;opacity:0;transition:opacity 1.2s ease;pointer-events:none;">
+      </video>
+      <!-- S4 전용 배경 영상 -->
+      <video id="s4-video" src="VIDEO/S4.mp4" autoplay muted loop playsinline
+        style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1;opacity:0;transition:opacity 1.2s ease;pointer-events:none;">
+      </video>
+      <!-- S41 전용 배경 영상 -->
+      <video id="s41-video" src="VIDEO/S4.1.mp4" autoplay muted loop playsinline
+        style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1;opacity:0;transition:opacity 1.2s ease;pointer-events:none;">
+      </video>
+      <!-- S5 전용 배경 영상 -->
+      <video id="s5-video" src="VIDEO/S5.mp4" autoplay muted loop playsinline
+        style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1;opacity:0;transition:opacity 1.2s ease;pointer-events:none;">
+      </video>
+      <!-- S6 전용 배경 영상 -->
+      <video id="s6-video" src="VIDEO/S6.mp4" autoplay muted loop playsinline
+        style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1;opacity:0;transition:opacity 1.2s ease;pointer-events:none;">
+      </video>
+      <canvas id="scene-art"></canvas>
+      <div id="tiger-eyes">
+        <div class="t-eyes-wrap" id="tiger-wrap">
+          <div class="t-eye"></div>
+          <div class="t-eye"></div>
+        </div>
+      </div>
+      <div id="stage-vign"></div>
+      <div id="stage-right-fade"></div>
+      <div id="stage-bottom-fade"></div>
+    </div>
+
+    <!-- 우측 스토리패널 -->
+    <div id="panel">
+      <div id="panel-head">
+        <div class="ph-rule"></div>
+        <div class="ph-texts">
+          <span class="ph-code" id="pc-sid">S0</span>
+          <span class="ph-name" id="pc-snm">프롤로그: 마지막 기록</span>
+        </div>
+      </div>
+      <div id="script-area"></div>
+      <div id="choice-area"></div>
+    </div>
+  </div>
+
+  <!-- 하단 순례 지도 서랍 -->
+  <div id="map-drawer">
+    <div id="map-tab">
+      <div class="map-tab-left">
+        <span class="map-tab-icon">🧭</span>
+        <span class="map-tab-title">불씨의 길 (The Ember Road)</span>
+      </div>
+      <div class="map-tab-progress">
+        <span class="map-progress-label">불씨 경로</span>
+        <div class="map-progress-dots" id="map-progress-dots"></div>
+      </div>
+      <span class="map-tab-chevron">▲</span>
+    </div>
+
+    <div id="map-body">
+      <!-- 경로 선을 그려줄 캔버스 -->
+      <canvas id="map-canvas"></canvas>
+      <div id="map-title-tag">
+        <span class="mtt-en">Frozen Continent Map</span>
+        <span class="mtt-kr">얼어붙은 지도</span>
+      </div>
+      <!-- 노드 배치 컨테이너 -->
+      <div id="map-nodes"></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══════════════════════════════════
+     JAVASCRIPT LOGIC
+     ══════════════════════════════════ -->
+<script>
+/* ─── 스탯 초기값 선언 ─── */
+let 온기 = 100, 불씨 = 50, 균열 = 0;
+let S3B = false; // 상인과의 비밀 거래 진행 플래그
+let snowDensity = 120; // 눈송이 밀도 (온기에 의해 변함)
+let currentScene = '';
+let tigerInterval = null;
+
+/* 화자별 기호/심볼 및 이름 맵핑 */
+const SPEAKERS_INFO = {
+  '윤': { symbol: 'Y', class: 'avatar-윤' },
+  '새벽': { symbol: 'S', class: 'avatar-새벽' },
+  '어머니': { symbol: 'M', class: 'avatar-어머니' },
+  '어머니 (녹음기)': { symbol: 'M', class: 'avatar-어머니' },
+  '어머니의 형상': { symbol: 'F', class: 'avatar-형상' },
+  '설호': { symbol: 'T', class: 'avatar-설호' },
+  '설호 (문 너머)': { symbol: 'T', class: 'avatar-설호' },
+  '상인': { symbol: 'B', class: 'avatar-상인' }
+};
+
+/* ─── 스탯 갱신 및 비주얼 연동 ─── */
+function addStat(n, v){
+  if(n === '온기') 온기 = cl(온기 + v);
+  else if(n === '불씨') 불씨 = cl(불씨 + v);
+  else if(n === '균열') 균열 = cl(균열 + v);
+  refreshStats(n);
+}
+
+function cl(v){ return Math.max(0, Math.min(100, v)); }
+
+function refreshStats(changed){
+  document.getElementById('sb-온기').style.width = 온기 + '%';
+  document.getElementById('sb-불씨').style.width = 불씨 + '%';
+  document.getElementById('sb-균열').style.width = 균열 + '%';
+
+  document.getElementById('hv-온기').textContent = 온기;
+  document.getElementById('hv-불씨').textContent = 불씨;
+  document.getElementById('hv-균열').textContent = 균열;
+
+  /* 수치가 변동될 때 스탯 칩이 반짝이며 맥동하는 효과 */
+  if(changed){
+    const chipMap = {'온기': 'chip-온기', '불씨': 'chip-불씨', '균열': 'chip-균열'};
+    const chipId = chipMap[changed];
+    if(chipId){
+      const chip = document.getElementById(chipId);
+      if(chip){
+        chip.classList.remove('pulse');
+        void chip.offsetWidth; // Reflow 트리거
+        chip.classList.add('pulse');
+        setTimeout(() => chip.classList.remove('pulse'), 600);
+      }
+    }
+  }
+
+  updateCrack();
+  updateWarmth();
+  
+  /* 온기가 낮을수록 숲의 가혹함(눈보라 강도)이 강해집니다 */
+  snowDensity = Math.max(30, 200 - Math.floor(온기 * 1.5));
+
+  /* 기억 조각 수집 개수 계산 (방문한 고유 노드 개수 기반) */
+  if (typeof window.getCollectedMemoryCount === 'function') {
+    const memCount = window.getCollectedMemoryCount();
+    document.getElementById('hud-mem-val').textContent = `기억의 조각 ${memCount}/6`;
+  }
+}
+
+/* 온기 상태에 따른 화면 색상 및 연무 이펙트 변화 */
+function updateWarmth(){
+  const ratio = 온기 / 100;
+  const ww = document.getElementById('world-warmth');
+  const wg = document.getElementById('warmth-glow');
+  if(온기 > 75){
+    ww.style.background = `radial-gradient(ellipse 70% 50% at 50% 100%, rgba(220, 90, 20, ${(ratio - 0.7) * 0.18}) 0%, transparent 70%)`;
+    ww.style.opacity = '1';
+    wg.style.background = `radial-gradient(ellipse 60% 40% at 50% 110%, rgba(230, 110, 30, ${(ratio - 0.7) * 0.28}), transparent)`;
+  } else if(온기 < 35){
+    const coldRatio = (35 - 온기) / 35;
+    ww.style.background = `radial-gradient(ellipse 80% 60% at 50% 50%, rgba(20, 50, 120, ${coldRatio * 0.25}) 0%, transparent 80%)`;
+    ww.style.opacity = '1';
+    wg.style.background = 'none';
+  } else {
+    ww.style.opacity = '0.2';
+    wg.style.background = 'none';
+  }
+}
+
+/* 균열(상실 및 동결의 고통) 상태에 따른 화면 흔들림 및 깨짐 쉐이딩 변화 */
+function updateCrack(){
+  const t = 균열 / 100;
+  const cv = document.getElementById('crack-vfx');
+  cv.style.opacity = t * 0.85;
+  cv.style.boxShadow = `inset 0 0 ${150 * t}px rgba(160, 20, 20, ${t * 0.65}), inset 0 0 ${60 * t}px rgba(220, 30, 30, ${t * 0.35})`;
+  
+  if(t > 0.6){
+    const shift = Math.floor((t - 0.6) * 12);
+    document.getElementById('script-area').style.filter = `drop-shadow(${shift}px 0 0 rgba(200,10,10,0.25)) drop-shadow(-${shift}px 0 0 rgba(0,40,200,0.15))`;
+  } else {
+    document.getElementById('script-area').style.filter = 'none';
+  }
+}
+
+/* ─── 엔딩 판정 로직 ─── */
+function getEnding(){
+  if(균열 >= 100) return 'GAMEOVER';
+  const s = 온기 * 불씨;
+  if(s >= 10000) return 'E3'; // 온기와 불씨가 모두 풍요로울 때 해피엔딩
+  if(s >= 7000) return 'E1'; // 한쪽이라도 온전할 때 굿엔딩
+  return 'E2'; // 노멀엔딩
+}
+
+/* ══════════════════════════════════
+   SCENE VISUAL (좌측 영상 캔버스 렌더링)
+   - 이미지를 비워두는 대신 동적 파티클 및 심장박동식 조명을 배치
+   ══════════════════════════════════ */
+const SCENE_ART = {
+  S0: drawS0, S1: drawS1, S2: drawS2, S3: drawS3,
+  S4: drawS4, S4_1: drawS41, S5: drawS5, S6: drawS6,
+};
+
+function clearArt(){
+  const cv = document.getElementById('scene-art');
+  const ctx = cv.getContext('2d');
+  ctx.clearRect(0, 0, cv.width, cv.height);
+}
+
+function sizeArt(){
+  const cv = document.getElementById('scene-art');
+  const s = document.getElementById('stage');
+  cv.width = s.offsetWidth;
+  cv.height = s.offsetHeight;
+}
+
+/* S0: 고풍스러운 지하실의 은은한 난롯불 */
+function drawS0(){
+  sizeArt();
+  const cv = document.getElementById('scene-art');
+  const c = cv.getContext('2d');
+  c.clearRect(0, 0, cv.width, cv.height);
+}
+
+function drawEmberFlame(c, x, y, sz, intensity){
+  const ratio = intensity / 100;
+  const pulse = (Math.sin(performance.now() * 0.005) + 1) / 2;
+
+  // 아늑한 잔광
+  const g = c.createRadialGradient(x, y, 0, x, y, sz * (2.0 + pulse * 0.5));
+  g.addColorStop(0, `rgba(230, 100, 30, ${0.22 * ratio})`);
+  g.addColorStop(0.5, `rgba(160, 50, 10, ${0.1 * ratio})`);
+  g.addColorStop(1, 'rgba(0,0,0,0)');
+  c.fillStyle = g;
+  c.fillRect(0, 0, c.canvas.width, c.canvas.height);
+
+  // 불꽃 다층 렌더링
+  const flameLayers = [
+    { dx: 0, dy: 0, h: sz * 0.9, op: 0.9 },
+    { dx: -sz * 0.12, dy: sz * 0.08, h: sz * 0.7, op: 0.6 },
+    { dx: sz * 0.12, dy: sz * 0.06, h: sz * 0.65, op: 0.5 }
+  ];
+
+  flameLayers.forEach(f => {
+    const fx = x + f.dx;
+    const fy = y - f.h * 0.2 + f.dy + Math.sin(performance.now() * 0.01) * 3;
+    const fg = c.createRadialGradient(fx, fy + f.h * 0.2, 0, fx, fy, f.h);
+    fg.addColorStop(0, `rgba(255, 230, 140, ${f.op * ratio})`);
+    fg.addColorStop(0.4, `rgba(240, 120, 30, ${f.op * 0.7 * ratio})`);
+    fg.addColorStop(0.8, `rgba(180, 40, 10, ${f.op * 0.2 * ratio})`);
+    fg.addColorStop(1, 'rgba(0,0,0,0)');
+
+    c.beginPath();
+    c.moveTo(fx, fy + f.h * 0.4);
+    c.bezierCurveTo(fx - sz * 0.2, fy + f.h * 0.1, fx - sz * 0.1, fy - f.h * 0.2, fx, fy - f.h * 0.4);
+    c.bezierCurveTo(fx + sz * 0.1, fy - f.h * 0.2, fx + sz * 0.2, fy + f.h * 0.1, fx, fy + f.h * 0.4);
+    c.fillStyle = fg;
+    c.fill();
+  });
+}
+
+/* S1: 대피소의 굳게 닫힌 서리 낀 문 */
+function drawS1(){
+  sizeArt();
+  const cv = document.getElementById('scene-art');
+  const c = cv.getContext('2d');
+  c.clearRect(0, 0, cv.width, cv.height);
+}
+
+/* S2: 눈부시게 매서운 눈의 숲 */
+function drawS2(){
+  sizeArt();
+  const cv = document.getElementById('scene-art');
+  cv.getContext('2d').clearRect(0, 0, cv.width, cv.height);
+}
+
+/* S3: 신비로운 얼음 마을의 기괴한 조명 */
+function drawS3(){
+  sizeArt();
+  const cv = document.getElementById('scene-art');
+  cv.getContext('2d').clearRect(0, 0, cv.width, cv.height);
+}
+
+/* S4: 따뜻한 환영의 침실 벽난로 */
+function drawS4(){
+  sizeArt();
+  const cv = document.getElementById('scene-art');
+  cv.getContext('2d').clearRect(0, 0, cv.width, cv.height);
+}
+
+/* S4.1: 공포와 위화감의 붉은 늪 */
+function drawS41(){
+  sizeArt();
+  const cv = document.getElementById('scene-art');
+  cv.getContext('2d').clearRect(0, 0, cv.width, cv.height);
+}
+
+/* S5: 탑 정상으로 향하는 아득한 계단 */
+function drawS5(){
+  sizeArt();
+  const cv = document.getElementById('scene-art');
+  cv.getContext('2d').clearRect(0, 0, cv.width, cv.height);
+}
+
+/* S6: 마침내 도달한 정상의 거대한 문 */
+function drawS6(){
+  sizeArt();
+  const cv = document.getElementById('scene-art');
+  cv.getContext('2d').clearRect(0, 0, cv.width, cv.height);
+}
+
+/* ─── 호랑이 눈 접근 연동 ─── */
+let tigerActive = false;
+let tigerPhase = 0;
+
+function startTiger(){
+  if(tigerActive) return;
+  tigerActive = true;
+  tigerPhase = 0;
+  
+  const eyes = document.getElementById('tiger-eyes');
+  const wrap = document.getElementById('tiger-wrap');
+  eyes.style.display = 'flex';
+  eyes.style.justifyContent = 'center';
+  eyes.style.alignItems = 'center';
+  
+  wrap.style.transform = 'translateY(20px) scale(0.2)';
+  wrap.style.opacity = '0';
+
+  setTimeout(() => {
+    wrap.style.transition = 'transform 8s ease-in, opacity 2s ease';
+    wrap.style.opacity = '0.35';
+  }, 200);
+
+  setTimeout(() => {
+    wrap.style.transform = 'translateY(-10px) scale(0.7)';
+    wrap.style.opacity = '0.65';
+  }, 600);
+
+  tigerInterval = setInterval(() => {
+    tigerPhase++;
+    if(tigerPhase === 2){
+      wrap.style.transform = 'translateY(-20px) scale(1.2)';
+      wrap.style.opacity = '0.9';
+    }
+    if(tigerPhase >= 4){
+      clearInterval(tigerInterval);
+      tigerInterval = null;
+    }
+  }, 4000);
+}
+
+function stopTiger(){
+  tigerActive = false;
+  if(tigerInterval){
+    clearInterval(tigerInterval);
+    tigerInterval = null;
+  }
+  document.getElementById('tiger-eyes').style.display = 'none';
+}
+
+/* ══════════════════════════════════
+   SCENE DATA (원본 대본 및 대사, 씬명 완전 보존)
+   ══════════════════════════════════ */
+const SC = {
+  S0: {
+    sid: 'S0', nm: '프롤로그: 마지막 기록', bg: 'sbg-S0', art: 'S0', prologue: true,
+    html: `
+      <div class="stg">얼어붙은 지하 방. 작은 난로 하나만 희미하게 타오른다.</div>
+      <div class="stg">낡은 녹음기에서 목소리가 흘러나온다.</div>
+      <div class="dlg">
+        <div class="char-avatar-container avatar-어머니">
+          <div class="char-avatar-glow"></div>
+          <span class="char-avatar-symbol">M</span>
+        </div>
+        <div class="dlg-body">
+          <p class="spk" style="color:var(--gold-core)">어머니 (녹음기)</p>
+          <div class="speech">
+            <p>"혹시 이 목소리를 듣고 있다면...엄마는 이미 돌아가지 못했겠구나."</p>
+            <p>"미안해. 약속한 시간에 맞춰 돌아가겠다고 했는데."</p>
+            <p>"하지만 괜찮아. 길 끝에는 분명 빛이 있어. 세상 끝의 탑, 그 안에 있는 문을 열면.."</p>
+            <p>"그리고— 누군가 너희를 부르며 다가온다면, 목소리를 믿지 말고 떨림을 봐. 진짜는 떨리지 않아."</p>
+          </div>
+        </div>
+      </div>
+      <div class="dlg">
+        <div class="char-avatar-container avatar-새벽">
+          <div class="char-avatar-glow"></div>
+          <span class="char-avatar-symbol">S</span>
+        </div>
+        <div class="dlg-body">
+          <p class="spk" style="color:var(--ice-bright)">새벽</p>
+          <div class="speech"><p>"오빠. 엄마 목소리야. 오빠도 들었지? 진짜 엄마 목소리잖아."</p></div>
+        </div>
+      </div>
+      <div class="dlg">
+        <div class="char-avatar-container avatar-윤">
+          <div class="char-avatar-glow"></div>
+          <span class="char-avatar-symbol">Y</span>
+        </div>
+        <div class="dlg-body">
+          <p class="spk" style="color:var(--ember-warm)">해온</p>
+          <div class="speech">
+            <p>"...들었어."</p>
+            <p>"...떨림을 보라고 했어."</p>
+          </div>
+        </div>
+      </div>
+      <div class="dlg">
+        <div class="char-avatar-container avatar-새벽">
+          <div class="char-avatar-glow"></div>
+          <span class="char-avatar-symbol">S</span>
+        </div>
+        <div class="dlg-body">
+          <p class="spk" style="color:var(--ice-bright)">새벽</p>
+          <div class="speech"><p>"그게 무슨 뜻이야?"</p></div>
+        </div>
+      </div>
+      <div class="dlg">
+        <div class="char-avatar-container avatar-윤">
+          <div class="char-avatar-glow"></div>
+          <span class="char-avatar-symbol">Y</span>
+        </div>
+        <div class="dlg-body">
+          <p class="spk" style="color:var(--ember-warm)">해온</p>
+          <div class="speech"><p>"...나도 잘 모르겠어. 하지만 기억해둬야 할 것 같아."</p></div>
+        </div>
+      </div>
+      <div class="dlg">
+        <div class="char-avatar-container avatar-새벽">
+          <div class="char-avatar-glow"></div>
+          <span class="char-avatar-symbol">S</span>
+        </div>
+        <div class="dlg-body">
+          <p class="spk" style="color:var(--ice-bright)">새벽</p>
+          <div class="speech"><p>"오빠, 불이 곧 꺼질 것 같아."</p></div>
+        </div>
+      </div>
+      <div class="dlg">
+        <div class="char-avatar-container avatar-윤">
+          <div class="char-avatar-glow"></div>
+          <span class="char-avatar-symbol">Y</span>
+        </div>
+        <div class="dlg-body">
+          <p class="spk" style="color:var(--ember-warm)">해온</p>
+          <div class="speech"><p>"괜찮아. 우리도 이제... 움직여야 할 시간이야."</p></div>
+        </div>
+      </div>
+      <div id="s0-progress-wrap">
+        <div class="s0-proceed-label" style="display:none;"></div>
+        <div id="s0-progress-bar" style="display:none;"><div id="s0-progress-fill"></div></div>
+        <div style="display:flex;justify-content:center;margin-top:28px;">
+          <button id="s0-next-btn" style="
+            font-family:'Gowun Batang','Noto Serif KR',serif;
+            font-size:12px; letter-spacing:0.5em;
+            color:rgba(240,210,130,0.85);
+            border:1px solid rgba(212,164,58,0.35);
+            background:rgba(8,5,1,0.5);
+            padding:16px 44px; cursor:pointer; border-radius:3px;
+            backdrop-filter:blur(10px);
+            transition:all 0.5s ease;
+            text-shadow:0 0 12px rgba(212,164,58,0.5);
+            box-shadow:0 0 20px rgba(212,164,58,0.08);
+          ">빛을 찾아 떠나기</button>
+        </div>
+      </div>`,
+    choices: []
+  },
+  S1: {
+    sid: 'S1', nm: '낯선 목소리: 기만', bg: 'sbg-S1', art: 'S1',
+    html: () => `
+      <div class="stg">문틈으로 흰 입김 같은 것이 스며든다. 그리고 무언가가 문을 긁는 소리.</div>
+      <div class="dlg">
+        <div class="char-avatar-container avatar-설호">
+          <div class="char-avatar-glow"></div>
+          <span class="char-avatar-symbol">T</span>
+        </div>
+        <div class="dlg-body">
+          <p class="spk" style="color:#e05252">설호 (문 너머)</p>
+          <div class="speech">
+            <p>"윤아. 새벽아. 엄마야. 문만 열어줘. 같이 탑으로 가자. 빨리, 시간이 없어."</p>
+            <p>"추워... 너무 추워. 얘들아, 엄마 좀 들여보내줄래?"</p>
+          </div>
+        </div>
+      </div>
+      <div class="dlg">
+        <div class="char-avatar-container avatar-새벽">
+          <div class="char-avatar-glow"></div>
+          <span class="char-avatar-symbol">S</span>
+        </div>
+        <div class="dlg-body">
+          <p class="spk" style="color:var(--ice-bright)">새벽</p>
+          <div class="speech">
+            <p>"오빠. 엄마야. 목소리잖아. 열어줘."</p>
+            <p>"엄마 목소리 맞잖아, 왜 가만히 있어?"</p>
+          </div>
+        </div>
+      </div>
+      <div class="dlg">
+        <div class="char-avatar-container avatar-윤">
+          <div class="char-avatar-glow"></div>
+          <span class="char-avatar-symbol">Y</span>
+        </div>
+        <div class="dlg-body">
+          <p class="spk" style="color:var(--ember-warm)">해온</p>
+          <div class="speech">
+            <p>"...잠깐만."</p>
+            <p>"어머니는 우리에게 말할 때 목소리가 떨리지 않았어."</p>
+            <p>"지금 저 목소리, 끝이 흔들려. 마치... 누군가 다른 사람의 목소리를 흉내내는 것처럼."</p>
+          </div>
+        </div>
+      </div>
+      ${불씨 > 50 ? '<p class="inner-v">— 목소리 끝이 흔들린다. 어머니의 목소리가 아닐 수 있다. —</p>' : ''}
+      <div class="stg">침묵. 눈보라가 더 세진다.</div>
+      <div class="dlg">
+        <div class="char-avatar-container avatar-새벽">
+          <div class="char-avatar-glow"></div>
+          <span class="char-avatar-symbol">S</span>
+        </div>
+        <div class="dlg-body">
+          <p class="spk" style="color:var(--ice-bright)">새벽 (윤에게 작게)</p>
+          <div class="speech"><p>"그래도... 만약에 진짜면 어떡해?"</p></div>
+        </div>
+      </div>`,
+    choices: [
+      { key: 'A', lbl: '조용히 뒤로 물러난다.', nxt: 'S1A', stats: [['불씨', 10], ['균열', -5]], effs: [['불씨', '+10', 'p'], ['균열', '-5', 'n']] },
+      { key: 'B', lbl: '문을 열어준다.', nxt: 'S1B', stats: [['온기', -15], ['균열', 25]], effs: [['온기', '-15', 'n'], ['균열', '+25', 'p']] }
+    ]
+  },
+  S1A: {
+    sid: 'S1', nm: '낯선 목소리: 기만', bg: 'sbg-S1', art: 'S1',
+    html: `
+      <div class="dlg">
+        <div class="char-avatar-container avatar-윤">
+          <div class="char-avatar-glow"></div>
+          <span class="char-avatar-symbol">Y</span>
+        </div>
+        <div class="dlg-body">
+          <p class="spk" style="color:var(--ember-warm)">해온</p>
+          <div class="speech"><p>"진짜 엄마는 우리에게 서두르라고 하지 않았어."</p></div>
+        </div>
+      </div>
+      <div class="stg">문 너머가 조용해진다. 발소리가 천천히 멀어진다.</div>
+      <div class="dlg">
+        <div class="char-avatar-container avatar-새벽">
+          <div class="char-avatar-glow"></div>
+          <span class="char-avatar-symbol">S</span>
+        </div>
+        <div class="dlg-body">
+          <p class="spk" style="color:var(--ice-bright)">새벽</p>
+          <div class="speech"><p>"...맞아."</p></div>
+        </div>
+      </div>
+      <div class="narr">온기가 두 사람 사이에 조용히 남는다.</div>`,
+    choices: [{ lbl: '다음으로', nxt: 'S2', isNext: true }]
+  },
+  S1B: {
+    sid: 'S1', nm: '낯선 목소리: 기만', bg: 'sbg-S1', art: 'S1',
+    html: `
+      <div class="stg">문 너머에 있는 건 어머니가 아니었다. 추위에 오래 떠돌아 정신을 잃은 방랑자였다. 윤은 새벽을 뒤로 밀며 문을 다시 닫는다.</div>
+      <div class="dlg">
+        <div class="char-avatar-container avatar-윤">
+          <div class="char-avatar-glow"></div>
+          <span class="char-avatar-symbol">Y</span>
+        </div>
+        <div class="dlg-body">
+          <p class="spk" style="color:var(--ember-warm)">해온</p>
+          <div class="speech"><p>"...내가 틀렸어. 미안해."</p></div>
+        </div>
+      </div>
+      <div class="dlg">
+        <div class="char-avatar-container avatar-새벽">
+          <div class="char-avatar-glow"></div>
+          <span class="char-avatar-symbol">S</span>
+        </div>
+        <div class="dlg-body">
+          <p class="spk" style="color:var(--ice-bright)">새벽</p>
+          <div class="speech"><em>아무 말도 하지 않는다.</em></div>
+        </div>
+      </div>
+      <div class="stg">균열이 생긴 자리에 찬바람이 스민다.</div>`,
+    choices: [{ lbl: '다음으로', nxt: 'S2', isNext: true }]
+  },
+  S2: {
+    sid: 'S2', nm: '눈의 숲: 추격', bg: 'sbg-S2', art: 'S2', tiger: true,
+    html: () => `
+      <div class="stg">얼어붙은 숲. 눈발이 쏟아진다. 나무 사이로 발소리가 점점 가까워진다.</div>
+      <div class="dlg">
+        <div class="char-avatar-container avatar-새벽">
+          <div class="char-avatar-glow"></div>
+          <span class="char-avatar-symbol">S</span>
+        </div>
+        <div class="dlg-body">
+          <p class="spk" style="color:var(--ice-bright)">새벽</p>
+          <div class="speech">
+            <p>"오빠, 뒤에서 오고 있어. 느껴져."</p>
+            <p>"발소리가... 점점 커져."</p>
+          </div>
+        </div>
+      </div>
+      <div class="dlg">
+        <div class="char-avatar-container avatar-윤">
+          <div class="char-avatar-glow"></div>
+          <span class="char-avatar-symbol">Y</span>
+        </div>
+        <div class="dlg-body">
+          <p class="spk" style="color:var(--ember-warm)">해온</p>
+          <div class="speech"><p>"알아. 숨소리도 줄여. 나무 사이로. 천천히."</p></div>
+        </div>
+      </div>
+      ${균열 > 20 ? '<p class="warn-t">어둠 속에서 무언가 움직인다</p>' : ''}
+      <div class="dlg">
+        <div class="char-avatar-container avatar-새벽">
+          <div class="char-avatar-glow"></div>
+          <span class="char-avatar-symbol">S</span>
+        </div>
+        <div class="dlg-body">
+          <p class="spk" style="color:var(--ice-bright)">새벽</p>
+          <div class="speech">
+            <p>"빨라지고 있어."</p>
+            <p>"오빠, 저거— 저 그림자, 봤어?"</p>
+          </div>
+        </div>
+      </div>
+      <div class="dlg">
+        <div class="char-avatar-container avatar-윤">
+          <div class="char-avatar-glow"></div>
+          <span class="char-avatar-symbol">Y</span>
+        </div>
+        <div class="dlg-body">
+          <p class="spk" style="color:var(--ember-warm)">해온</p>
+          <div class="speech"><p>"보지 마. 앞만 봐."</p></div>
+        </div>
+      </div>
+      <div class="stg">두 사람은 전속력으로 달린다. 발이 푹푹 빠지는 눈 속에서, 숨이 턱까지 차오른다. 뒤에서 으르렁거리는 소리가 가까워지다가— 멀어진다.</div>
+      <div class="stg">둘의 입김이 하얗게 피어오른다. 저 멀리, 마을의 불빛 같은 것이 희미하게 보인다.</div>`,
+    choices: [
+      { key: 'A', lbl: '온기를 숨기며 조용히 전진한다.', nxt: 'S2A', stats: [['균열', -20], ['온기', -10]], effs: [['균열', '-20', 'n'], ['온기', '-10', 'n']] },
+      { key: 'B', lbl: '새벽을 품에 안고 숨는다..', nxt: 'S2B', stats: [['균열', 35], ['불씨', 10]], effs: [['균열', '+35', 'p'], ['불씨', '+10', 'p']] }
+    ]
+  },
+  S2A: {
+    sid: 'S2', nm: '눈의 숲: 추격', bg: 'sbg-S2', art: 'S2',
+    html: `
+      <div class="narr">온기를 최소한으로 숨기며 나아간다. 발소리가 점점 멀어진다.</div>
+      <div class="dlg">
+        <div class="char-avatar-container avatar-새벽">
+          <div class="char-avatar-glow"></div>
+          <span class="char-avatar-symbol">S</span>
+        </div>
+        <div class="dlg-body">
+          <p class="spk" style="color:var(--ice-bright)">새벽 (윤의 손을 잡으며)</p>
+          <div class="speech"><p>"오빠 손이 차가워."</p></div>
+        </div>
+      </div>
+      <div class="dlg">
+        <div class="char-avatar-container avatar-윤">
+          <div class="char-avatar-glow"></div>
+          <span class="char-avatar-symbol">Y</span>
+        </div>
+        <div class="dlg-body">
+          <p class="spk" style="color:var(--ember-warm)">해온</p>
+          <div class="speech"><p>"괜찮아. 계속 가자."</p></div>
+        </div>
+      </div>`,
+    choices: [{ lbl: '다음으로', nxt: 'S3', isNext: true }]
+  },
+  S2B: {
+    sid: 'S2', nm: '눈의 숲: 추격', bg: 'sbg-S2', art: 'S2',
+    html: `
+      <div class="stg">윤이 새벽을 품 안으로 끌어당겨 끌어안는다. 둘의 숨소리만 어둠 속에 남는다.</div>
+      <div class="stg">발소리가 가까이 왔다가 — 멀어진다.</div>
+      <div class="dlg">
+        <div class="char-avatar-container avatar-새벽">
+          <div class="char-avatar-glow"></div>
+          <span class="char-avatar-symbol">S</span>
+        </div>
+        <div class="dlg-body">
+          <p class="spk" style="color:var(--ice-bright)">새벽</p>
+          <div class="speech"><p>"...갔어?"</p></div>
+        </div>
+      </div>
+      <div class="dlg">
+        <div class="char-avatar-container avatar-윤">
+          <div class="char-avatar-glow"></div>
+          <span class="char-avatar-symbol">Y</span>
+        </div>
+        <div class="dlg-body">
+          <p class="spk" style="color:var(--ember-warm)">해온</p>
+          <div class="speech"><p>"조금만 더 기다려."</p></div>
+        </div>
+      </div>
+      <div class="narr">어둠 속에서 둘은 더 가까이 붙었다.</div>`,
+    choices: [{ lbl: '다음으로', nxt: 'S3', isNext: true }]
+  },
+  S3: {
+    sid: 'S3', nm: '떠돌이 상인: 거래', bg: 'sbg-S3', art: 'S3',
+    html: () => `
+      <div class="stg">얼음 마을 어귀. 부서진 간판들 사이로, 도깨비불처럼 푸르게 빛나는 등을 든 수상한 상인이 나타난다. 짐 보따리에서 따뜻한 빛이 새어 나온다.</div>
+      <div class="dlg">
+        <div class="char-avatar-container avatar-상인">
+          <div class="char-avatar-glow"></div>
+          <span class="char-avatar-symbol">B</span>
+        </div>
+        <div class="dlg-body">
+          <p class="spk" style="color:#6bb070">상인</p>
+          <div class="speech">
+            <p>"어이, 거기. 작은 손님들. 탑으로 가는 길은 비싸다고."</p>
+            <p>"소중한 걸 내놓을래, 아니면 실력을 보여줄래?"</p>
+          </div>
+        </div>
+      </div>
+      <div class="dlg">
+        <div class="char-avatar-container avatar-새벽">
+          <div class="char-avatar-glow"></div>
+          <span class="char-avatar-symbol">S</span>
+        </div>
+        <div class="dlg-body">
+          <p class="spk" style="color:var(--ice-bright)">새벽 (윤에게 작게)</p>
+          <div class="speech"><p>"저 사람 믿어도 돼?"</p></div>
+        </div>
+      </div>
+      <div class="dlg">
+        <div class="char-avatar-container avatar-윤">
+          <div class="char-avatar-glow"></div>
+          <span class="char-avatar-symbol">Y</span>
+        </div>
+        <div class="dlg-body">
+          <p class="spk" style="color:var(--ember-warm)">해온</p>
+          <div class="speech"><p>"...모르겠어. 하지만 다른 길은 없어."</p></div>
+        </div>
+      </div>
+      <div class="dlg">
+        <div class="char-avatar-container avatar-윤">
+          <div class="char-avatar-glow"></div>
+          <span class="char-avatar-symbol">Y</span>
+        </div>
+        <div class="dlg-body">
+          <p class="spk" style="color:var(--ember-warm)">해온</p>
+          <div class="speech"><p>"어쩔 수 없어."</p></div>
+        </div>
+      </div>
+      <div class="dlg">
+        <div class="char-avatar-container avatar-상인">
+          <div class="char-avatar-glow"></div>
+          <span class="char-avatar-symbol">B</span>
+        </div>
+        <div class="dlg-body">
+          <p class="spk" style="color:#6bb070">상인</p>
+          <div class="speech"><p>"오, 결심이 빠르네. 좋아, 좋아."</p></div>
+        </div>
+      </div>
+      <div class="stg">상인이 손을 내민다. 차가운 손가락이 등불 빛에 길게 늘어진 그림자를 만든다.</div>
+      <div class="dlg">
+        <div class="char-avatar-container avatar-상인">
+          <div class="char-avatar-glow"></div>
+          <span class="char-avatar-symbol">B</span>
+        </div>
+        <div class="dlg-body">
+          <p class="spk" style="color:#6bb070">상인</p>
+          <div class="speech"><p>"자, 무엇을 내어줄 텐가?"</p></div>
+        </div>
+      </div>
+      ${불씨 < 60 ? `
+      <div class="dlg">
+        <div class="char-avatar-container avatar-상인">
+          <div class="char-avatar-glow"></div>
+          <span class="char-avatar-symbol">B</span>
+        </div>
+        <div class="dlg-body">
+          <p class="spk" style="color:#6bb070">상인</p>
+          <div class="speech"><p>"겁쟁이치고는 꽤 버텼군. 그러면 값이 올라가."</p></div>
+        </div>
+      </div>` : ''}`,
+    choices: [
+      { key: 'A', lbl: '어머니의 온기를 내어준다.', nxt: 'S3A', s3b: false, stats: [['불씨', 20], ['온기', -5]], effs: [['불씨', '+20', 'p'], ['온기', '-5', 'n']] },
+      { key: 'B', lbl: '다른이들의 온기를 몰래 넘긴다.', nxt: 'S3B', s3b: true, stats: [['온기', -20], ['균열', 10]], effs: [['온기', '-20', 'n'], ['균열', '+10', 'p']] }
+    ]
+  },
+  S3A: {
+    sid: 'S3', nm: '떠돌이 상인: 거래', bg: 'sbg-S3', art: 'S3',
+    html: `
+      <div class="stg">윤이 목도리를 넘기며, 잠깐 손이 멈춘다.</div>
+      <div class="dlg">
+        <div class="char-avatar-container avatar-새벽">
+          <div class="char-avatar-glow"></div>
+          <span class="char-avatar-symbol">S</span>
+        </div>
+        <div class="dlg-body">
+          <p class="spk" style="color:var(--ice-bright)">새벽</p>
+          <div class="speech"><p>"오빠, 그거 엄마 거잖아."</p></div>
+        </div>
+      </div>
+      <div class="dlg">
+        <div class="char-avatar-container avatar-윤">
+          <div class="char-avatar-glow"></div>
+          <span class="char-avatar-symbol">Y</span>
+        </div>
+        <div class="dlg-body">
+          <p class="spk" style="color:var(--ember-warm)">해온</p>
+          <div class="speech"><p>"...엄마가 더 좋아할 거야. 우리가 올라가는 걸."</p></div>
+        </div>
+      </div>
+      <div class="dlg">
+        <div class="char-avatar-container avatar-상인">
+          <div class="char-avatar-glow"></div>
+          <span class="char-avatar-symbol">B</span>
+        </div>
+        <div class="dlg-body">
+          <p class="spk" style="color:#6bb070">상인 (목도리를 받아 들며)</p>
+          <div class="speech"><p>"온기가 배어 있네. 오래된 거야."</p></div>
+        </div>
+      </div>
+      <div class="stg">상인이 조용히 길을 알려준다.</div>`,
+    choices: [{ lbl: '다음으로', nxt: 'S4', isNext: true }]
+  },
+  S3B: {
+    sid: 'S3', nm: '떠돌이 상인: 거래', bg: 'sbg-S3', art: 'S3',
+    html: `
+      <div class="stg">윤은 마을 사람들이 모아둔 여분의 온기 주머니를 몰래 꺼내 상인에게 건넨다.</div>
+      <div class="dlg">
+        <div class="char-avatar-container avatar-새벽">
+          <div class="char-avatar-glow"></div>
+          <span class="char-avatar-symbol">S</span>
+        </div>
+        <div class="dlg-body">
+          <p class="spk" style="color:var(--ice-bright)">새벽</p>
+          <div class="speech"><p>"오빠, 이건... 다른 사람들 거잖아."</p></div>
+        </div>
+      </div>
+      <div class="stg">윤이 대답하지 못한다. 새벽이 한 발 멀어진다.</div>
+      <div class="narr">찬바람이 두 사람 사이를 지나간다.</div>`,
+    choices: [{ lbl: '다음으로', nxt: 'S4', isNext: true }]
+  },
+  S4: {
+    sid: 'S4', nm: '따뜻한 집: 잠식', bg: 'sbg-S4', art: 'S4',
+    html: () => `
+      <div class="stg">눈보라 속에 갑자기 나타난 집. 벽난로. 따뜻한 수프. 포근한 침대. 이상할 만큼 완벽하다.</div>
+      <div class="dlg">
+        <div class="char-avatar-container avatar-새벽">
+          <div class="char-avatar-glow"></div>
+          <span class="char-avatar-symbol">S</span>
+        </div>
+        <div class="dlg-body">
+          <p class="spk" style="color:var(--ice-bright)">새벽</p>
+          <div class="speech">
+            <p>"오빠. 따뜻해. 이런 곳이... 정말 있었어? 수프 냄새 좀 봐. 진짜 좋은 냄새야."</p>
+          </div>
+        </div>
+      </div>
+      <div class="stg">해온은 문가에 서서 집 안을 둘러본다. 너무도 익숙한, 그리운 냄새가 난다.</div>
+      <div class="dlg">
+        <div class="char-avatar-container avatar-윤">
+          <div class="char-avatar-glow"></div>
+          <span class="char-avatar-symbol">Y</span>
+        </div>
+        <div class="dlg-body">
+          <p class="spk" style="color:var(--ember-warm)">해온</p>
+          <div class="speech"><p>"...너무 완벽해."</p></div>
+        </div>
+      </div>
+      <div class="stg">불빛이 흔들린다. 난롯불 너머로 어머니의 형상이 보인다. <span style="color:var(--blood-crack)">눈이 깜빡이지 않는다.</span></div>
+      <div class="dlg">
+        <div class="char-avatar-container avatar-형상">
+          <div class="char-avatar-glow"></div>
+          <span class="char-avatar-symbol">F</span>
+        </div>
+        <div class="dlg-body">
+          <p class="spk" style="color:#999">어머니</p>
+          <div class="speech">
+            <p>"엄마야. 많이 힘들었지. 그 먼 길을, 둘이서만... 정말 잘 견뎌왔어."</p>
+            <p>"여기 있어도 돼. 더 올라가지 않아도 돼. 내 품으로 와. 이제 쉬어도 돼."</p>
+          </div>
+        </div>
+      </div>
+      <div class="dlg">
+        <div class="char-avatar-container avatar-새벽">
+          <div class="char-avatar-glow"></div>
+          <span class="char-avatar-symbol">S</span>
+        </div>
+        <div class="dlg-body">
+          <p class="spk" style="color:var(--ice-bright)">새벽 (눈물을 글썽이며)</p>
+          <div class="speech"><p>"오빠, 엄마야. 진짜 맞지? 이번엔 진짜잖아."</p></div>
+        </div>
+      </div>
+      <div class="dlg">
+        <div class="char-avatar-container avatar-형상">
+          <div class="char-avatar-glow"></div>
+          <span class="char-avatar-symbol">F</span>
+        </div>
+        <div class="dlg-body">
+          <p class="spk" style="color:#999">어머니의 형상</p>
+          <div class="speech">
+            <p>"왜 그렇게 서 있어? 춥지 않니. 이리 와."</p>
+            <p>"...윤아. 너도 이리 와."</p>
+          </div>
+        </div>
+      </div>
+      <div class="dlg">
+        <div class="char-avatar-container avatar-윤">
+          <div class="char-avatar-glow"></div>
+          <span class="char-avatar-symbol">Y</span>
+        </div>
+        <div class="dlg-body">
+          <p class="spk" style="color:var(--ember-warm)">해온</p>
+          <div class="speech"><p>"...떨림을 보라고 했어. 그런데, 이 목소리는— 떨리지 않아. 너무 매끄러워. 수프 냄새도, 불빛도, 다 너무 완벽해. 마치... 내가 가장 원하던 모습 그대로."</p></div>
+        </div>
+      </div>
+      <p class="inner-v">눈이 깜빡이지 않는다. 알고 있다. 그런데도.</p>
+      ${S3B ? '<div class="narr">"집 끝에서 소리가 새어 나온다. 이름을 부르는 목소리들.<br>여기 잠든 것들은, 한때 탑으로 가려다 잠든 것들이다."</div>' : ''}`,
+    choices: [
+      { key: 'A', lbl: '환영을 거부하고 떠난다.', nxt: 'S4A', stats: [['불씨', 15], ['온기', 5]], effs: [['불씨', '+15', 'p'], ['온기', '+5', 'p']] },
+      { key: 'B', lbl: '품 안으로 들어간다.', nxt: 'S4B', stats: [['온기', -20], ['불씨', -30], ['균열', 15]], effs: [['온기', '-20', 'n'], ['불씨', '-30', 'n'], ['균열', '+15', 'p']] }
+    ]
+  },
+  S4A: {
+    sid: 'S4', nm: '따뜻한 집: 잠식', bg: 'sbg-S4', art: 'S4',
+    html: `
+      <div class="dlg">
+        <div class="char-avatar-container avatar-윤">
+          <div class="char-avatar-glow"></div>
+          <span class="char-avatar-symbol">Y</span>
+        </div>
+        <div class="dlg-body">
+          <p class="spk" style="color:var(--ember-warm)">해온</p>
+          <div class="speech"><p>"새벽아. 가자."</p></div>
+        </div>
+      </div>
+      <div class="dlg">
+        <div class="char-avatar-container avatar-새벽">
+          <div class="char-avatar-glow"></div>
+          <span class="char-avatar-symbol">S</span>
+        </div>
+        <div class="dlg-body">
+          <p class="spk" style="color:var(--ice-bright)">새벽</p>
+          <div class="speech"><p>"...응."</p></div>
+        </div>
+      </div>
+      <div class="stg">새벽이 형상을 한 번 더 돌아본다. 그리고 윤의 손을 잡는다.</div>
+      <div class="stg">집이 천천히 사라진다. 눈보라만 남는다.</div>`,
+    choices: [{ lbl: '다음으로', nxt: 'S5', isNext: true }]
+  },
+  S4B: {
+    sid: 'S4.1', nm: '기억의 늪: 루프', bg: 'sbg-S41', art: 'S4_1',
+    html: `
+      <div class="stg">품에 안기는 순간, 어머니의 얼굴이 일그러진다.</div>
+      <div class="dlg">
+        <div class="char-avatar-container avatar-새벽">
+          <div class="char-avatar-glow"></div>
+          <span class="char-avatar-symbol">S</span>
+        </div>
+        <div class="dlg-body">
+          <p class="spk" style="color:var(--ice-bright)">새벽 (흐릿하게, 점점 멀어지는 목소리로)</p>
+          <div class="speech">
+            <p>"오빠— 오빠, 이거 엄마 아니야— 나와— 제발—"</p>
+            <p>"오빠, 내 목소리 들려? 정신 차려—!"</p>
+          </div>
+        </div>
+      </div>
+      <div class="dlg">
+        <div class="char-avatar-container avatar-형상">
+          <div class="char-avatar-glow"></div>
+          <span class="char-avatar-symbol">F</span>
+        </div>
+        <div class="dlg-body">
+          <p class="spk" style="color:#999">어머니 (목소리가 여러 겹으로 겹치며)</p>
+          <div class="speech">
+            <p>"가지 마. 여기가 제일 따뜻해. 엄마가 있잖아. 엄마 있잖아. 아무도 너를 떠나지 않아. 여기서는."</p>
+            <p>"쉬어. 그냥... 쉬어."</p>
+          </div>
+        </div>
+      </div>
+      <div class="dlg">
+        <div class="char-avatar-container avatar-윤">
+          <div class="char-avatar-glow"></div>
+          <span class="char-avatar-symbol">Y</span>
+        </div>
+        <div class="dlg-body">
+          <p class="spk" style="color:var(--ember-warm)">해온 (혼자, 반복)</p>
+          <div class="speech">
+            <p>"나는 알고 있었다...그런데도, 여기 있고 싶어."</p>
+          </div>
+        </div>
+      </div>
+      <div class="dlg">
+        <div class="char-avatar-container avatar-새벽">
+          <div class="char-avatar-glow"></div>
+          <span class="char-avatar-symbol">S</span>
+        </div>
+        <div class="dlg-body">
+          <p class="spk" style="color:var(--ice-bright)">새벽 (아주 멀리서)</p>
+          <div class="speech"><p>"...오빠..."</p></div>
+        </div>
+      </div>
+      <div class="narr">"달콤했다. 그래서 더 깊이 베였다."</div>`,
+    choices: [
+      { key: 'A', lbl: '새벽의 목소리를 따라 현실로 돌아온다.', nxt: 'S4B_out', stats: [['온기', -10], ['불씨', -10]], effs: [['온기', '-10', 'n'], ['불씨', '-10', 'n']] },
+      { key: 'B', lbl: '어머니에게 다시 한번 더 안긴다.', nxt: 'GAMEOVER', stats: [['온기', -100], ['불씨', -100], ['균열', 100]], effs: [['온기', '0', 'n'], ['불씨', '0', 'n'], ['균열', 'MAX', 'p']] }
+    ]
+  },
+  S4B_out: {
+    sid: 'S4', nm: '따뜻한 집: 잠식', bg: 'sbg-S4', art: 'S4',
+    html: () => 균열 >= 100
+      ? '<p class="warn-t">균열이 너무 깊어졌다. 설호가 들어온다.</p>'
+      : '<div class="narr">겨우 빠져나왔다. 하지만 온기가 많이식었다.</div>',
+    choices: [{ lbl: '계속하다', nxt: () => 균열 >= 100 ? 'GAMEOVER' : 'S4', isNext: true }]
+  },
+  S5: {
+    sid: 'S5', nm: '빛의 탑: 등반', bg: 'sbg-S5', art: 'S5',
+    html: () => `
+      <div class="stg">세상 끝의 거대한 탑. 끝없는 계단. 아래에서 설호가 탑을 뜯으며 올라온다.</div>
+      <div class="dlg">
+        <div class="char-avatar-container avatar-윤">
+          <div class="char-avatar-glow"></div>
+          <span class="char-avatar-symbol">Y</span>
+        </div>
+        <div class="dlg-body">
+          <p class="spk" style="color:var(--ember-warm)">해온</p>
+          <div class="speech">
+            <p>"거의 다 왔어, 새벽! 저 위가 빛의 탑 정상이야!"</p>
+            <p>"조금만 더 가면 돼. 할 수 있어."</p>
+          </div>
+        </div>
+      </div>
+      <div class="dlg">
+        <div class="char-avatar-container avatar-새벽">
+          <div class="char-avatar-glow"></div>
+          <span class="char-avatar-symbol">S</span>
+        </div>
+        <div class="dlg-body">
+          <p class="spk" style="color:var(--ice-bright)">새벽</p>
+          <div class="speech">
+            <p>"...너무 높아. 끝이 안 보여."</p>
+            <p>"오빠, 다리에 힘이 안 들어가."</p>
+          </div>
+        </div>
+      </div>
+      ${균열 > 70 ? '<p class="warn-t">발판이 연달아 무너지고 있다</p>' : ''}
+      <div class="dlg">
+        <div class="char-avatar-container avatar-새벽">
+          <div class="char-avatar-glow"></div>
+          <span class="char-avatar-symbol">S</span>
+        </div>
+        <div class="dlg-body">
+          <p class="spk" style="color:var(--ice-bright)">새벽</p>
+          <div class="speech">
+            <p>"오빠, 밑에서—"</p>
+            <p>"그게 점점 가까워지고 있어!"</p>
+          </div>
+        </div>
+      </div>
+      <div class="dlg">
+        <div class="char-avatar-container avatar-윤">
+          <div class="char-avatar-glow"></div>
+          <span class="char-avatar-symbol">Y</span>
+        </div>
+        <div class="dlg-body">
+          <p class="spk" style="color:var(--ember-warm)">해온</p>
+          <div class="speech">
+            <p>"내 목소리만 들어. 알겠지?"</p>
+            <p>"한 칸씩. 천천히. 절대 아래는 보지 마."</p>
+          </div>
+        </div>
+      </div>`,
+    choices: [
+      { key: 'A', lbl: '서로 부축하며 끝까지 오른다.', nxt: 'S6', stats: [['온기', 30], ['균열', -20]], effs: [['온기', '+30', 'p'], ['균열', '-20', 'n']] },
+      { key: 'B', lbl: '포기한다.', nxt: 'S6', stats: [['온기', -10], ['불씨', -25]], effs: [['온기', '-10', 'n'], ['불씨', '-25', 'n']] }
+    ]
+  },
+  S5A: {
+    sid: 'S5', nm: '빛의 탑: 등반', bg: 'sbg-S5', art: 'S5',
+    html: `
+      <div class="dlg">
+        <div class="char-avatar-container avatar-새벽">
+          <div class="char-avatar-glow"></div>
+          <span class="char-avatar-symbol">S</span>
+        </div>
+        <div class="dlg-body">
+          <p class="spk" style="color:var(--ice-bright)">새벽</p>
+          <div class="speech"><p>"오빠... 그만하자. 무서워. 돌아가자."</p></div>
+        </div>
+      </div>
+      <div class="dlg">
+        <div class="char-avatar-container avatar-윤">
+          <div class="char-avatar-glow"></div>
+          <span class="char-avatar-symbol">Y</span>
+        </div>
+        <div class="dlg-body">
+          <p class="spk" style="color:var(--ember-warm)">해온</p>
+          <div class="speech"><p>"...알았어. 잠깐만 내려가자."</p></div>
+        </div>
+      </div>
+      <div class="narr">발걸음이 다시 아래로 향한다. 따뜻했던 그 집의 불빛이 멀리서 가물거린다.</div>`,
+    choices: [{ lbl: '계속하다', nxt: () => 균열 >= 100 ? 'GAMEOVER' : 'S4', isNext: true }]
+  },
+  S5B: {
+    sid: 'S5', nm: '빛의 탑: 등반', bg: 'sbg-S5', art: 'S5',
+    html: `
+      <div class="dlg">
+        <div class="char-avatar-container avatar-새벽">
+          <div class="char-avatar-glow"></div>
+          <span class="char-avatar-symbol">S</span>
+        </div>
+        <div class="dlg-body">
+          <p class="spk" style="color:var(--ice-bright)">새벽</p>
+          <div class="speech"><p>"오빠 손 안 놓을게."</p></div>
+        </div>
+      </div>
+      <div class="dlg">
+        <div class="char-avatar-container avatar-윤">
+          <div class="char-avatar-glow"></div>
+          <span class="char-avatar-symbol">Y</span>
+        </div>
+        <div class="dlg-body">
+          <p class="spk" style="color:var(--ember-warm)">해온</p>
+          <div class="speech"><p>"나도."</p></div>
+        </div>
+      </div>
+      <div class="narr">둘이 함께 한 계단씩 오른다.<br>아래에서 설호의 소리가 점점 멀어진다.</div>`,
+    choices: [{ lbl: '다음으로', nxt: 'S6', isNext: true }]
+  },
+  S6: {
+    sid: 'S6', nm: '마지막 문: 심판', bg: 'sbg-S6', art: 'S6',
+    html: `
+      <div class="stg">두 사람은 문 앞에 멈춰선다. 숨이 가쁘다. 손은 여전히 맞잡혀 있다.</div>
+      <div class="narr gold-q">"세상을 밝히는 것은 태양이 아니라 서로를 향한 마음이다."</div>
+      <div class="dlg">
+        <div class="char-avatar-container avatar-새벽">
+          <div class="char-avatar-glow"></div>
+          <span class="char-avatar-symbol">S</span>
+        </div>
+        <div class="dlg-body">
+          <p class="spk" style="color:var(--ice-bright)">새벽 (아주 작게)</p>
+          <div class="speech">
+            <p>"오빠. 우리 괜찮겠지?"</p>
+            <p>"여기까지 와서... 아무것도 없으면 어떡하지?"</p>
+          </div>
+        </div>
+      </div>
+      <div class="dlg">
+        <div class="char-avatar-container avatar-윤">
+          <div class="char-avatar-glow"></div>
+          <span class="char-avatar-symbol">Y</span>
+        </div>
+        <div class="dlg-body">
+          <p class="spk" style="color:var(--ember-warm)">해온</p>
+          <div class="speech">
+            <p>"응. 여기까지 왔잖아."</p>
+            <p>"...적어도 포기하지 않았다는 뜻이야."</p>
+            <p>"무슨 일이 있어도, 우리는 함께였어. 그것만으로도... 충분해. 여기 있어. 가자."</p>
+          </div>
+        </div>
+      </div>`,
+    choices: [{ lbl: '문을 연다.', nxt: () => getEnding() }]
+  },
+  E3: {
+    end: true, type: 'true', badge: '✦ TRUE ENDING', title: '가족의 불씨',
+    text: `문이 열리자, 그 너머엔 황금빛으로 가득한 방이 있었다.\n그리고 그 빛 속에, 누군가 서 있었다. 어머니였다. 진짜 어머니.\n\n어머니는 탑의 마지막 문을 지키는 수호자가 되어, 아주 오랫동안 아이들을 기다리고 있었다.\n설호가 빼앗아 간 목소리는, 탑 안에서도 줄곧 아이들을 향하고 있었다.\n\n"왔구나. 정말... 왔구나."\n\n세 사람은 함께 손을 잡았다.\n그 손을 통해, 그동안의 모든 추위와 두려움이 천천히 녹아내렸다.\n그 순간, 긴 겨울이 끝났다.\n\n해가 떠올랐다.\n오래, 오래 기다리던 해가, 온 세상을 가득 채웠다.\n그리고 그 빛 아래, 세 사람은 더 이상 혼자가 아니었다.`
+  },
+  E1: {
+    end: true, type: 'good', badge: '✦ GOOD ENDING', title: '해와 달',
+    text: `문 너머엔 아무도 없었다. 어머니는 그곳에 없었다.\n대신, 문 안쪽 가득히, 잠들어 있던 빛이 서서히 깨어나고 있었다.\n\n해가 뜨고 달이 떴다.\n어머니를 만나지는 못했다. 하지만 남매는 마침내 해를 깨우는 데 성공했다.\n\n윤은 해가 되어 세상을 비추고,\n새벽은 달이 되어 밤을 지켰다.\n\n둘은 더 이상 같은 곳에 있을 수 없었지만, 서로를 늘 바라볼 수 있었다.\n긴 겨울이 끝났다. 얼어붙었던 강이 풀리고, 숲에는 다시 새싹이 돋았다.`
+  },
+  E2: {
+    end: true, type: 'normal', badge: 'NORMAL ENDING', title: '겨울의 기억',
+    text: `문은 끝내 열리지 않았다.\n거대한 문 앞에서, 두 사람은 한참을 서 있었다. 빛은 새어 나왔지만, 문은 무겁게 닫혀 있었다.\n\n겨울은 끝나지 않았다. 설호의 울음소리는 여전히 어딘가에서 들려왔다.\n하지만 둘은 함께, 작은 동굴 안 난롯불 앞에 앉아 있었다.\n\n윤이 새벽의 어깨에 외투를 덮어줬다.\n새벽은 아무 말 없이 오빠 쪽으로 조금 더 붙었다.\n\n"오빠, 우리... 다시 해볼 수 있을까?"\n"...그래. 다음엔, 더 잘 할 수 있을 거야."\n\n불씨는 꺼지지 않았다.`
+  },
+  GAMEOVER: {
+    end: true, type: 'bad', badge: 'GAME OVER', title: '삼켜지다',
+    text: `설호는 틈으로 들어왔다.\n온기가 없는 곳. 두 사람 사이에 생긴 그 작은 틈으로.\n처음엔 작은 한기였다. 그리고 그 한기는, 점점 커져 모든 것을 삼켰다.\n\n집은 조용해졌다. 난롯불이 꺼졌다.\n따뜻했던 수프 냄새도, 포근한 이불도, 모두 차갑게 식어갔다.\n사라진 것들은— 원래부터 없었던 것처럼, 그대로 눈 속에 묻혔다.\n\n낡은 녹음기 하나가, 얼어붙은 지하 방에 덩그러니 남아있다.\n어머니의 마지막 기록은, 끝내 수신자를 잃었다.\n그리고 눈은, 아무 일도 없었던 것처럼, 계속해서 내렸다.`
+  }
+};
+
+/* ─── 렌더 시스템 ─── */
+function render(key){
+  const sc = SC[key];
+  if(!sc){ console.error('Scene Not Found:', key); return; }
+  currentScene = key;
+  if(sc.end){ showEnding(sc); return; }
+
+  stopTiger();
+
+  // 씬 전환이 '다음으로' 형식의 단일 카드일 경우, 유연하게 병합 출력
+  if(sc.choices.length === 1 && sc.choices[0].isNext){
+    const nxtKey = typeof sc.choices[0].nxt === 'function' ? sc.choices[0].nxt() : sc.choices[0].nxt;
+    const nxt = SC[nxtKey];
+    if(nxt && !nxt.end){
+      const mergedHtml = (typeof sc.html === 'function' ? sc.html() : sc.html)
+        + '<div style="height:1px; background:rgba(160, 220, 255, 0.08); margin:16px 0;"></div>'
+        + (typeof nxt.html === 'function' ? nxt.html() : nxt.html);
+      _renderScene({ ...nxt, html: mergedHtml });
+      return;
+    }
+    if(nxt && nxt.end){ showEnding(nxt); return; }
+  }
+  
+  _renderScene(sc);
+
+  /* 프롤로그(S0) 버튼 클릭으로 다음 씬 진행 */
+  if(sc.prologue){
+    let beat = 0;
+    const hb = setInterval(() => {
+      beat++;
+      const valEl = document.getElementById('hv-불씨');
+      if(valEl){
+        valEl.style.transform = beat % 2 === 0 ? 'scale(1.25)' : 'scale(1)';
+        valEl.style.color = beat % 2 === 0 ? 'var(--gold-core)' : '#fff';
+      }
+    }, 900);
+
+    const s0btn = document.getElementById('s0-next-btn');
+    if(s0btn){
+      s0btn.addEventListener('mouseenter', ()=>{
+        s0btn.style.color='rgba(255,230,150,1)';
+        s0btn.style.borderColor='rgba(212,164,58,0.7)';
+        s0btn.style.boxShadow='0 0 35px rgba(212,164,58,0.25), inset 0 0 12px rgba(212,164,58,0.08)';
+      });
+      s0btn.addEventListener('mouseleave', ()=>{
+        s0btn.style.color='rgba(240,210,130,0.85)';
+        s0btn.style.borderColor='rgba(212,164,58,0.35)';
+        s0btn.style.boxShadow='0 0 20px rgba(212,164,58,0.08)';
+      });
+      s0btn.addEventListener('click', ()=>{
+        clearInterval(hb);
+        const valEl = document.getElementById('hv-불씨');
+        if(valEl){ valEl.style.transform = ''; valEl.style.color = ''; }
+        startEmberOverlayRitual(() => { go({ nxt: 'S1' }); });
+      });
+    }
+  }
+}
+
+function _renderScene(sc){
+  document.getElementById('hud-sid').textContent = sc.sid;
+  document.getElementById('hud-snm').textContent = sc.nm;
+  document.getElementById('pc-sid').textContent = sc.sid;
+  document.getElementById('pc-snm').textContent = sc.nm;
+  document.getElementById('stage-bg').className = sc.bg || 'sbg-S0';
+
+  /* 씬별 영상 표시/숨김 */
+  const videoMap = {
+    'S0':'s0-video','S1':'s1-video','S2':'s2-video',
+    'S3':'s3-video','S4':'s4-video','S4.1':'s41-video',
+    'S5':'s5-video','S6':'s6-video'
+  };
+  Object.entries(videoMap).forEach(([sid, vid]) => {
+    const el = document.getElementById(vid);
+    if(!el) return;
+    if(sc.sid === sid){
+      el.style.opacity = '1';
+      el.play().catch(()=>{});
+    } else {
+      el.style.opacity = '0';
+      el.pause();
+    }
+  });
+
+  const bg = sc.bg || 'sbg-S0';
+  const palMap = {
+    'sbg-S0': 'pal-winter', 'sbg-S1': 'pal-winter', 'sbg-S2': 'pal-winter',
+    'sbg-S3': 'pal-ember', 'sbg-S4': 'pal-false', 'sbg-S41': 'pal-false',
+    'sbg-S5': 'pal-tower', 'sbg-S6': 'pal-dawn'
+  };
+  document.body.className = palMap[bg] || 'pal-winter';
+
+  /* 씬 변화에 맞추어 하단 지도 동기화 — sc.sid 기준으로 호출 */
+  if(typeof window.mapVisitScene === 'function'){
+    window.mapVisitScene(sc.sid);
+  }
+
+  // 씬 아트 드로잉
+  const artFn = SCENE_ART[sc.art || sc.sid];
+  if(artFn) setTimeout(artFn, 200); else clearArt();
+
+  if(sc.tiger) startTiger();
+
+  // 가독성을 극대화한 페이드인 연출로 스크립트 출력
+  const sa = document.getElementById('script-area');
+  sa.innerHTML = `<div class="scene-appear">${typeof sc.html === 'function' ? sc.html() : sc.html}</div>`;
+  sa.scrollTop = 0;
+
+  // 아바타 원형 프레임 내부에 심볼 캐릭터 로딩
+  const avatars = sa.querySelectorAll('.char-avatar-container');
+  avatars.forEach(av => {
+    const spkName = av.parentElement.querySelector('.spk').textContent.trim();
+    const cleanSpk = spkName.split(' ')[0]; // 화자 이름 추출
+    const info = SPEAKERS_INFO[cleanSpk] || SPEAKERS_INFO[spkName];
+    if(info){
+      av.className = `char-avatar-container ${info.class}`;
+      av.querySelector('.char-avatar-symbol').textContent = info.symbol;
+    }
+  });
+
+  // 선택지 칩 생성
+  const ca = document.getElementById('choice-area');
+  ca.innerHTML = '';
+  sc.choices.forEach(ch => {
+    if(ch.isNext){
+      const b = document.createElement('button');
+      b.className = 'next-btn';
+      b.textContent = ch.lbl || '여정을 계속 전진하다 →';
+      b.onclick = () => go(ch);
+      ca.appendChild(b);
+    } else {
+      const d = document.createElement('div');
+      d.className = 'choice-card';
+      if(ch.key){
+        const k = document.createElement('div');
+        k.className = 'cc-key';
+        k.textContent = `파편 기록 [ ${ch.key} ]`;
+        d.appendChild(k);
+      }
+      const l = document.createElement('div');
+      l.className = 'cc-label';
+      l.textContent = ch.lbl;
+      d.appendChild(l);
+
+      if(ch.effs && ch.effs.length){
+        const ef = document.createElement('div');
+        ef.className = 'cc-effs';
+        ch.effs.forEach(([stat, val, dir]) => {
+          const t = document.createElement('span');
+          t.className = `eff eff-${stat}-${dir}`;
+          const ico = { '온기': '🌡 ', '불씨': '✨ ', '균열': '❄ ' };
+          t.textContent = `${ico[stat] || ''}${stat} ${val}`;
+          ef.appendChild(t);
+        });
+        d.appendChild(ef);
+      }
+      d.onclick = () => go(ch);
+      ca.appendChild(d);
+    }
+  });
+}
+
+function go(ch){
+  if(ch.stats) ch.stats.forEach(([n, v]) => addStat(n, v));
+  if(ch.s3b !== undefined) S3B = ch.s3b;
+  const nk = typeof ch.nxt === 'function' ? ch.nxt() : ch.nxt;
+  fadeSceneTransition(nk);
+}
+
+function fadeSceneTransition(key){
+  const f = document.getElementById('fade-layer');
+  f.classList.add('on');
+  setTimeout(() => {
+    render(key);
+    setTimeout(() => f.classList.remove('on'), 300);
+  }, 600);
+}
+
+/* ─── 엔딩 렌더링 ─── */
+function showEnding(sc){
+  document.getElementById('game-wrap').style.display = 'none';
+  const es = document.getElementById('ending-screen');
+  document.getElementById('e-badge').textContent = sc.badge;
+  document.getElementById('e-badge').className = 'e-badge b-' + sc.type;
+  document.getElementById('e-title').textContent = sc.title;
+  document.getElementById('e-text').innerHTML = sc.text.replace(/\n/g, '<br>');
+  es.classList.add('on');
+
+  /* 엔딩 영상 표시 */
+  const endVideoMap = {
+    'true': 'end-true-video',
+    'good': 'end-good-video',
+    'normal': 'end-normal-video',
+    'bad': 'end-bad-video'
+  };
+  ['end-true-video','end-good-video','end-normal-video','end-bad-video'].forEach(id => {
+    const el = document.getElementById(id);
+    if(!el) return;
+    const isActive = endVideoMap[sc.type] === id;
+    el.style.opacity = isActive ? '1' : '0';
+    if(isActive) el.play().catch(()=>{});
+    else el.pause();
+  });
+
+  /* 캔버스는 투명하게 비움 */
+  const cv = document.getElementById('ending-canvas');
+  cv.width = window.innerWidth; cv.height = window.innerHeight;
+  cv.getContext('2d').clearRect(0, 0, cv.width, cv.height);
+}
+
+/* ─── 시작 / 재시작 제어 ─── */
+/* ══════════════════════════════════════════════════
+   OPENING SEQUENCE  —  판타지 영화 오프닝 연출
+   1) 타이틀 암전  2) 세계관 내레이션 스크롤
+   3) 「어머니의 마지막 기록을 듣는다」버튼
+   4) 불씨 폭발 → S0 시작
+   ══════════════════════════════════════════════════ */
+(function(){
+
+  /* ── 세계관 문장 목록 ── */
+  const LINES = [
+    '오래전, 세상에는 겨울이 없었다.',
+    '',
+    '사람들은 태양 아래에서 웃었고,',
+    '아이들은 따뜻한 바람 속에서 뛰어놀았다.',
+    '',
+    '하지만 어느 날, 하늘에서 빛이 사라졌다.',
+    '',
+    '태양은 잠들었고,',
+    '세상은 끝나지 않는 겨울 속으로 가라앉았다.',
+    '',
+    '사람들은 말했다.',
+    '세상 끝, 구름 위에',
+    '모든 빛의 근원인 『빛의 탑』이 존재한다고.',
+    '',
+    '그리고 온기를 잃은 사람을 쫓는 존재가 태어났다.',
+    '사람들은 그것을 『설호』라고 불렀다.',
+  ];
+
+  /* ── 불씨 캔버스 ── */
+  let emberRAF;
+  function startEmberAnim(){
+    const cv = document.getElementById('ember-cv');
+    if(!cv) return;
+    const ctx = cv.getContext('2d');
+    let t = 0;
+    function draw(){
+      t += 0.04;
+      const w = cv.width, h = cv.height, cx = w/2, cy = h/2;
+      ctx.clearRect(0,0,w,h);
+      const pulse = 0.85 + Math.sin(t*1.1)*0.15 + Math.sin(t*2.3)*0.05;
+      const flicker = 1 + Math.sin(t*4.7)*0.04 + Math.sin(t*7.3)*0.02;
+      // 외부 아우라
+      const aura = ctx.createRadialGradient(cx,cy,0, cx,cy, 44*pulse);
+      aura.addColorStop(0, `rgba(255,220,100,${0.06*flicker})`);
+      aura.addColorStop(0.5, `rgba(212,140,30,0.03)`);
+      aura.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = aura;
+      ctx.beginPath(); ctx.arc(cx,cy,44*pulse,0,Math.PI*2); ctx.fill();
+      // 중간 광환
+      const mid = ctx.createRadialGradient(cx,cy,0, cx,cy, 22*pulse);
+      mid.addColorStop(0, `rgba(255,240,160,${0.55*flicker})`);
+      mid.addColorStop(0.5, `rgba(220,150,40,${0.28*flicker})`);
+      mid.addColorStop(1, 'rgba(180,80,0,0)');
+      ctx.fillStyle = mid;
+      ctx.beginPath(); ctx.arc(cx,cy,22*pulse,0,Math.PI*2); ctx.fill();
+      // 코어
+      const core = ctx.createRadialGradient(cx,cy,0, cx,cy, 7*pulse);
+      core.addColorStop(0, `rgba(255,255,220,${0.98*flicker})`);
+      core.addColorStop(0.5, `rgba(255,210,80,0.9)`);
+      core.addColorStop(1, 'rgba(220,120,20,0)');
+      ctx.fillStyle = core;
+      ctx.beginPath(); ctx.arc(cx,cy,7*pulse,0,Math.PI*2); ctx.fill();
+      emberRAF = requestAnimationFrame(draw);
+    }
+    draw();
+  }
+
+  /* ── 배경 캔버스 (눈 + 탑 실루엣) ── */
+  let bgRAF;
+  function startBgAnim(){
+    const cv = document.getElementById('opening-canvas');
+    if(!cv) return;
+    cv.width = window.innerWidth; cv.height = window.innerHeight;
+    window.addEventListener('resize', ()=>{ cv.width=window.innerWidth; cv.height=window.innerHeight; });
+    const ctx = cv.getContext('2d');
+    const flakes = Array.from({length:90}, ()=>({
+      x: Math.random(), y: Math.random(),
+      vy: Math.random()*0.0006+0.0002,
+      vx: Math.random()*0.0003,
+      r: Math.random()*1.4+0.3,
+      o: Math.random()*0.18+0.03
+    }));
+    let t=0, towerAlpha=0, towerDir=1;
+    function draw(){
+      t+=0.012;
+      const w=cv.width, h=cv.height;
+      ctx.clearRect(0,0,w,h);
+      // 밤하늘
+      const bg=ctx.createLinearGradient(0,0,0,h);
+      bg.addColorStop(0,'#000000'); bg.addColorStop(1,'#01020a');
+      ctx.fillStyle=bg; ctx.fillRect(0,0,w,h);
+      // 탑 실루엣 — 희미하게 등장했다 사라짐
+      towerAlpha += towerDir * 0.003;
+      if(towerAlpha>0.12) towerDir=-1;
+      if(towerAlpha<0) { towerAlpha=0; towerDir=1; }
+      const tw=w*0.04, tx=(w-tw)/2;
+      ctx.globalAlpha = towerAlpha;
+      const tg=ctx.createLinearGradient(0,0,0,h*0.6);
+      tg.addColorStop(0,'rgba(200,180,100,0.6)'); tg.addColorStop(1,'rgba(10,8,2,0)');
+      ctx.fillStyle=tg; ctx.fillRect(tx, h*0.1, tw, h*0.55);
+      // 탑 꼭대기 빛
+      const topGlow=ctx.createRadialGradient(w/2,h*0.1,0, w/2,h*0.1,w*0.18);
+      topGlow.addColorStop(0,'rgba(220,170,60,0.18)'); topGlow.addColorStop(1,'rgba(0,0,0,0)');
+      ctx.fillStyle=topGlow; ctx.fillRect(0,0,w,h*0.4);
+      ctx.globalAlpha=1;
+      // 눈
+      flakes.forEach(f=>{
+        f.y+=f.vy; f.x+=f.vx+Math.sin(t*0.4)*0.0001;
+        if(f.y>1){f.y=-0.01;f.x=Math.random();}
+        ctx.beginPath(); ctx.arc(f.x*w,f.y*h,f.r,0,Math.PI*2);
+        ctx.fillStyle=`rgba(210,230,255,${f.o})`; ctx.fill();
+      });
+      bgRAF=requestAnimationFrame(draw);
+    }
+    draw();
+  }
+
+  /* ── 불씨 파티클 (버튼 주변) ── */
+  let partRAF;
+  function startParticles(){
+    const cv = document.getElementById('particle-cv');
+    if(!cv) return;
+    const ctx = cv.getContext('2d');
+    const W=cv.width, H=cv.height;
+    const pts = Array.from({length:18}, ()=>({
+      x: W/2+(Math.random()-0.5)*260,
+      y: H/2+(Math.random()-0.5)*60,
+      vx:(Math.random()-0.5)*0.3,
+      vy:-(Math.random()*0.4+0.1),
+      r:Math.random()*2+0.5,
+      o:Math.random()*0.6+0.2,
+      life:Math.random()
+    }));
+    function draw(){
+      ctx.clearRect(0,0,W,H);
+      pts.forEach(p=>{
+        p.life+=0.005; if(p.life>1){p.life=0;p.x=W/2+(Math.random()-0.5)*260;p.y=H/2+(Math.random()-0.5)*30;}
+        p.x+=p.vx; p.y+=p.vy*0.5;
+        const alpha = p.o * Math.sin(p.life*Math.PI);
+        ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+        ctx.fillStyle=`rgba(255,200,80,${alpha})`; ctx.fill();
+      });
+      partRAF=requestAnimationFrame(draw);
+    }
+    draw();
+  }
+
+  /* ── 문장 순차 표시 ── */
+  function runTextSequence(onComplete){
+    const wrap = document.getElementById('opening-text-wrap');
+    const inner = document.getElementById('opening-text-inner');
+    if(!wrap||!inner) return;
+
+    // 전체 텍스트를 span으로 나눠 한 줄씩 페이드
+    inner.innerHTML = '';
+    const spans = LINES.map(line=>{
+      const s = document.createElement('div');
+      s.style.cssText = 'opacity:0;transition:opacity 1.2s ease;min-height:1.2em;';
+      s.textContent = line || '\u00A0';
+      inner.appendChild(s);
+      return s;
+    });
+
+    // inner를 화면 중앙 아래에 시작, 위로 이동
+    inner.style.top = '55%';
+    inner.style.transform = 'translateY(0)';
+    inner.style.transition = 'none';
+    wrap.style.opacity = '1';
+
+    let idx = 0;
+    const SHOW_DELAY   = 1800;  // 문장 간격 (ms)
+    const SCROLL_SPEED = 42;    // px per step
+
+    // 조금씩 위로 스크롤하면서 문장 표시
+    let scrollY = 0;
+    const scrollInt = setInterval(()=>{
+      scrollY += 0.45;
+      inner.style.transform = `translateY(-${scrollY}px)`;
+    }, 16);
+
+    function showNext(){
+      if(idx >= spans.length){ 
+        clearInterval(scrollInt);
+        // 마지막 문장이 사라질 시간 후 완료
+        setTimeout(()=>{
+          wrap.style.transition='opacity 1.5s ease';
+          wrap.style.opacity='0';
+          setTimeout(onComplete, 1600);
+        }, 2200);
+        return;
+      }
+      spans[idx].style.opacity='1';
+      idx++;
+      setTimeout(showNext, SHOW_DELAY);
+    }
+    setTimeout(showNext, 600);
+  }
+
+  /* ── 4단계: 불씨 폭발 → S0 시작 ── */
+  function emberExplosionAndStart(){
+    const seq = document.getElementById('opening-seq');
+    const fl = document.getElementById('fade-layer');
+    // 불씨를 황금빛으로 확장
+    const emberDiv = document.getElementById('opening-ember');
+    emberDiv.style.transition = 'transform 1.8s cubic-bezier(0.2,0,0.6,1), opacity 1.8s ease';
+    emberDiv.style.transform = 'translate(-50%,-50%) scale(30)';
+    emberDiv.style.opacity = '0';
+    // 화면 황금빛 플래시
+    const flash = document.createElement('div');
+    flash.style.cssText = 'position:fixed;inset:0;background:rgba(212,164,58,0);z-index:560;pointer-events:none;transition:background 0.9s ease,opacity 1.2s ease 0.8s;opacity:1;';
+    document.body.appendChild(flash);
+    setTimeout(()=>{ flash.style.background='rgba(212,164,58,0.55)'; },50);
+    setTimeout(()=>{ flash.style.opacity='0'; },900);
+    // fade-layer로 검게
+    setTimeout(()=>{
+      fl.classList.add('on');
+    }, 1400);
+    setTimeout(()=>{
+      cancelAnimationFrame(emberRAF);
+      cancelAnimationFrame(bgRAF);
+      cancelAnimationFrame(partRAF);
+      seq.style.display='none';
+      document.getElementById('title-screen').style.display='none';
+      document.getElementById('game-wrap').style.display='flex';
+      sizeArt();
+      if(typeof window.mapInit==='function') window.mapInit();
+      render('S0');
+      setTimeout(()=>fl.classList.remove('on'),400);
+      flash.remove();
+    }, 2000);
+  }
+
+  /* ── 메인 진입: 타이틀 버튼 클릭 ── */
+  window.startGame = function(){
+    const titleScreen = document.getElementById('title-screen');
+    const seq = document.getElementById('opening-seq');
+    const fl = document.getElementById('fade-layer');
+
+    // 1단계: 타이틀 암전
+    fl.classList.add('on');
+    setTimeout(()=>{
+      titleScreen.style.display='none';
+      seq.style.display='flex';
+      startBgAnim();
+      startEmberAnim();
+      fl.classList.remove('on');
+    }, 700);
+
+    // 2단계: 잠시 후 불씨만 보이다가 텍스트 시작
+    setTimeout(()=>{
+      runTextSequence(()=>{
+        // 3단계: 버튼 등장
+        const btnWrap = document.getElementById('opening-final-btn');
+        btnWrap.style.opacity='1';
+        btnWrap.style.pointerEvents='all';
+        startParticles();
+        // 불씨 살짝 위로
+        const emberDiv = document.getElementById('opening-ember');
+        emberDiv.style.transition='top 2s ease';
+        emberDiv.style.top='42%';
+      });
+    }, 1200);
+  };
+
+  /* ── 버튼 hover 효과 ── */
+  document.addEventListener('DOMContentLoaded', ()=>{
+    const btn = document.getElementById('prologue-start-btn');
+    if(!btn) return;
+    btn.addEventListener('mouseenter',()=>{
+      btn.style.color='rgba(255,230,150,1)';
+      btn.style.borderColor='rgba(212,164,58,0.7)';
+      btn.style.boxShadow='0 0 35px rgba(212,164,58,0.25), inset 0 0 12px rgba(212,164,58,0.08)';
+      btn.style.textShadow='0 0 20px rgba(212,164,58,0.8)';
+    });
+    btn.addEventListener('mouseleave',()=>{
+      btn.style.color='rgba(240,210,130,0.85)';
+      btn.style.borderColor='rgba(212,164,58,0.35)';
+      btn.style.boxShadow='0 0 20px rgba(212,164,58,0.08)';
+      btn.style.textShadow='0 0 12px rgba(212,164,58,0.5)';
+    });
+    btn.addEventListener('click', emberExplosionAndStart);
+  });
+
+})();
+
+function restartGame(){
+  온기 = 100; 불씨 = 50; 균열 = 0; S3B = false;
+  refreshStats(null);
+  document.getElementById('ending-screen').classList.remove('on');
+  /* 엔딩 영상 초기화 */
+  ['end-true-video','end-good-video','end-normal-video','end-bad-video'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el){ el.style.opacity='0'; el.pause(); }
+  });
+  document.getElementById('game-wrap').style.display = 'flex';
+  sizeArt();
+  if(typeof window.mapInit === 'function'){
+    const nodes = document.getElementById('map-nodes');
+    const dots = document.getElementById('map-progress-dots');
+    if(nodes) nodes.innerHTML = '';
+    if(dots) dots.innerHTML = '';
+    window.mapInitialized_reset && window.mapInitialized_reset();
+  }
+  render('S0');
+}
+
+document.getElementById('start-btn').addEventListener('click', startGame);
+document.getElementById('restart-btn').addEventListener('click', restartGame);
+window.addEventListener('resize', () => {
+  if(document.getElementById('game-wrap').style.display !== 'none') sizeArt();
+});
+refreshStats(null);
+
+/* ══════════════════════════════════
+   PILGRIMAGE MAP SYSTEM (순례 지도 캔버스 연출)
+   - 겨울 대륙 산맥 & 강 묘사 및 진행선 표시
+   ══════════════════════════════════ */
+(function(){
+
+const MAP_NODES = [
+  { id: 'S1', sid: 'S1', name: '집',       icon: '🕯', x: 0.08, desc: '어머니의 마지막 흔적' },
+  { id: 'S2', sid: 'S2', name: '눈의 숲',  icon: '🌲', x: 0.25, desc: '도깨비의 추격전' },
+  { id: 'S3', sid: 'S3', name: '얼음 마을',icon: '🏮', x: 0.42, desc: '수상한 상인의 계약' },
+  { id: 'S4', sid: 'S4', name: '따뜻한 집',icon: '🏠', x: 0.58, desc: '달콤한 동결의 꿈' },
+  { id: 'S5', sid: 'S5', name: '빛의 탑',  icon: '🗼', x: 0.75, desc: '아득한 종말의 계단' },
+  { id: 'S6', sid: 'S6', name: '마지막 문',icon: '✦',  x: 0.92, desc: '불씨 여정의 끝' }
+];
+
+const SCENE_TO_NODE = {
+  'S0': 'S1', 'S1': 'S1',
+  'S2': 'S2',
+  'S3': 'S3',
+  'S4': 'S4',
+  'S5': 'S5',
+  'S6': 'S6'
+};
+
+let visitedNodes = new Set();
+let currentNodeId = null;
+let mapOpen = false;
+let mapInitialized = false;
+let mapCompassAngle = 0; // 나침반 회전각
+
+function initMap(){
+  if(mapInitialized) return;
+  mapInitialized = true;
+  buildNodes();
+  buildProgressDots();
+  resizeMapCanvas();
+  window.addEventListener('resize', resizeMapCanvas);
+  document.getElementById('map-tab').addEventListener('click', toggleMap);
+
+  // 나침반 상시 회전 애니메이션
+  setInterval(() => {
+    mapCompassAngle += 0.5;
+  }, 30);
+}
+
+function buildNodes(){
+  const container = document.getElementById('map-nodes');
+  container.innerHTML = '';
+  MAP_NODES.forEach((node, i) => {
+    const el = document.createElement('div');
+    el.className = 'map-node undiscovered';
+    el.id = 'mnode-' + node.id;
+    el.style.left = (node.x * 100) + '%';
+    el.style.top = '50%';
+
+    el.innerHTML = `
+      <div class="node-marker">
+        <div class="node-marker-inner">${node.icon}</div>
+      </div>
+      <div class="node-label">
+        <span class="node-sid">${node.sid}</span>
+        <span class="node-name">${node.name}</span>
+      </div>`;
+
+    el.addEventListener('mouseenter', function(){
+      if(!this.classList.contains('undiscovered')){
+        showMapTooltip(this, node);
+      }
+    });
+    el.addEventListener('mouseleave', hideMapTooltip);
+    container.appendChild(el);
+  });
+}
+
+function buildProgressDots(){
+  const dots = document.getElementById('map-progress-dots');
+  dots.innerHTML = '';
+  MAP_NODES.forEach(node => {
+    const d = document.createElement('div');
+    d.className = 'map-dot';
+    d.id = 'mdot-' + node.id;
+    dots.appendChild(d);
+  });
+}
+
+window.getCollectedMemoryCount = function(){
+  return visitedNodes.size + (currentNodeId ? 1 : 0);
+};
+
+window.mapVisitScene = function(sceneKey){
+  const nodeId = SCENE_TO_NODE[sceneKey];
+  if(!nodeId) return;
+
+  if(!mapInitialized) initMap();
+
+  if(currentNodeId && currentNodeId !== nodeId){
+    visitedNodes.add(currentNodeId);
+    updateNodeState(currentNodeId, 'visited');
+    updateDot(currentNodeId, 'visited');
+  }
+
+  const isNew = !visitedNodes.has(nodeId) && currentNodeId !== nodeId;
+  currentNodeId = nodeId;
+
+  discoverNode(nodeId, isNew);
+  updateNodeState(nodeId, 'current');
+  updateDot(nodeId, 'current');
+
+  // 다음 노드를 흐릿하게 예고
+  const idx = MAP_NODES.findIndex(n => n.id === nodeId);
+  if(idx >= 0 && idx + 1 < MAP_NODES.length){
+    const nextNode = MAP_NODES[idx + 1];
+    if(!visitedNodes.has(nextNode.id) && nextNode.id !== nodeId){
+      discoverNode(nextNode.id, false, true);
+    }
+  }
+
+  setTimeout(resizeMapCanvas, 150);
+
+  if(isNew){
+    flashMapDrawer();
+  }
+};
+
+function discoverNode(nodeId, animate, unknown){
+  const el = document.getElementById('mnode-' + nodeId);
+  if(!el) return;
+  if(el.classList.contains('discovered') && !unknown) return;
+
+  if(unknown){
+    el.classList.remove('undiscovered');
+    el.classList.add('unknown');
+    el.querySelector('.node-marker-inner').textContent = '?';
+    el.querySelector('.node-name').textContent = '???';
+  } else {
+    el.classList.remove('undiscovered', 'unknown');
+    el.classList.add('discovered');
+    const node = MAP_NODES.find(n => n.id === nodeId);
+    if(node){
+      el.querySelector('.node-marker-inner').textContent = node.icon;
+      el.querySelector('.node-name').textContent = node.name;
+    }
+  }
+}
+
+function updateNodeState(nodeId, state){
+  const el = document.getElementById('mnode-' + nodeId);
+  if(!el) return;
+  el.classList.remove('visited', 'current', 'unknown');
+  el.classList.add(state);
+}
+
+function updateDot(nodeId, state){
+  const dot = document.getElementById('mdot-' + nodeId);
+  if(!dot) return;
+  dot.classList.remove('visited', 'current');
+  dot.classList.add(state);
+}
+
+function resizeMapCanvas(){
+  const cv = document.getElementById('map-canvas');
+  const body = document.getElementById('map-body');
+  const w = body.offsetWidth || 800;
+  const h = body.offsetHeight || 172;
+  cv.width = w;
+  cv.height = h;
+  drawMapPaths();
+}
+
+/* ─── 순례 지도의 산맥, 탑의 진행도 묘사 캔버스 ─── */
+function drawMapPaths(){
+  const cv = document.getElementById('map-canvas');
+  const ctx = cv.getContext('2d');
+  const w = cv.width, h = cv.height;
+  if(!w || !h) return;
+  ctx.clearRect(0,0,w,h);
+
+  const centerY = h * 0.45;
+
+  // 1) 겨울 대륙의 디테일한 산맥 실루엣 배경 드로잉
+  ctx.beginPath();
+  ctx.moveTo(0, h * 0.8);
+  ctx.quadraticCurveTo(w * 0.2, h * 0.5, w * 0.4, h * 0.75);
+  ctx.quadraticCurveTo(w * 0.6, h * 0.48, w * 0.8, h * 0.7);
+  ctx.quadraticCurveTo(w * 0.9, h * 0.6, w, h * 0.78);
+  ctx.lineTo(w, h);
+  ctx.lineTo(0, h);
+  ctx.closePath();
+  ctx.fillStyle = 'rgba(6, 12, 28, 0.45)';
+  ctx.fill();
+
+  // 산맥 드로잉 (어두운 서리 필터링)
+  ctx.strokeStyle = 'rgba(120, 190, 255, 0.08)';
+  ctx.lineWidth = 1;
+  ctx.stroke();
+
+  // 2) 진행 단계별 "빛의 탑" 가시화 연출
+  const currentIdx = MAP_NODES.findIndex(n => n.id === currentNodeId);
+  const towerX = MAP_NODES.find(n => n.id === 'S5').x * w;
+  
+  let towerOpacity = 0.08;
+  let towerGlowRadius = 20;
+  if(currentIdx >= 5) { towerOpacity = 0.9; towerGlowRadius = 90; }
+  else if(currentIdx >= 3) { towerOpacity = 0.45; towerGlowRadius = 50; }
+  else if(currentIdx >= 1) { towerOpacity = 0.2; towerGlowRadius = 30; }
+
+  // 탑 실루엣 그리기
+  ctx.save();
+  ctx.globalAlpha = towerOpacity;
+  
+  // 탑 뒤에 타오르는 황금빛 광배
+  const towerGlow = ctx.createRadialGradient(towerX, centerY - 25, 0, towerX, centerY - 25, towerGlowRadius);
+  towerGlow.addColorStop(0, 'rgba(212, 164, 58, 0.45)');
+  towerGlow.addColorStop(0.5, 'rgba(180, 120, 30, 0.15)');
+  towerGlow.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = towerGlow;
+  ctx.beginPath();
+  ctx.arc(towerX, centerY - 25, towerGlowRadius, 0, Math.PI*2);
+  ctx.fill();
+
+  // 탑의 구체적 외곽
+  ctx.fillStyle = 'rgba(212, 164, 58, 0.75)';
+  ctx.beginPath();
+  ctx.moveTo(towerX, centerY - 50);
+  ctx.lineTo(towerX - 8, centerY + 15);
+  ctx.lineTo(towerX + 8, centerY + 15);
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
+
+  // 3) 전체 점선 경로 그리기
+  ctx.beginPath();
+  MAP_NODES.forEach((node, i) => {
+    const x = node.x * w;
+    if(i === 0) ctx.moveTo(x, centerY);
+    else ctx.lineTo(x, centerY);
+  });
+  ctx.strokeStyle = 'rgba(120, 190, 255, 0.1)';
+  ctx.lineWidth = 1;
+  ctx.setLineDash([4, 6]);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // 4) 플레이어가 지나온 길의 화려한 아치형 황금 경로 연출
+  const visitedCoords = MAP_NODES
+    .filter(n => visitedNodes.has(n.id) || n.id === currentNodeId)
+    .map(n => ({ x: n.x * w, y: centerY }));
+
+  if(visitedCoords.length >= 2){
+    // 광채 레이어
+    ctx.beginPath();
+    visitedCoords.forEach((pt, i) => {
+      if(i === 0) ctx.moveTo(pt.x, pt.y);
+      else {
+        const prev = visitedCoords[i-1];
+        ctx.bezierCurveTo((prev.x + pt.x)/2, prev.y - 12, (prev.x + pt.x)/2, prev.y - 12, pt.x, pt.y);
+      }
+    });
+    ctx.strokeStyle = 'rgba(212, 164, 58, 0.22)';
+    ctx.lineWidth = 6;
+    ctx.stroke();
+
+    // 황금 핏줄 경로선
+    ctx.beginPath();
+    visitedCoords.forEach((pt, i) => {
+      if(i === 0) ctx.moveTo(pt.x, pt.y);
+      else {
+        const prev = visitedCoords[i-1];
+        ctx.bezierCurveTo((prev.x + pt.x)/2, prev.y - 12, (prev.x + pt.x)/2, prev.y - 12, pt.x, pt.y);
+      }
+    });
+    ctx.strokeStyle = 'rgba(212, 164, 58, 0.75)';
+    ctx.lineWidth = 1.8;
+    ctx.stroke();
+  }
+
+  // 5) 좌측 회전하는 나침반 데코 렌더링
+  ctx.save();
+  ctx.translate(60, h - 50);
+  ctx.rotate(mapCompassAngle * Math.PI / 180);
+  
+  ctx.strokeStyle = 'rgba(120, 190, 255, 0.22)';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.arc(0, 0, 22, 0, Math.PI*2);
+  ctx.stroke();
+
+  // 바늘
+  ctx.fillStyle = 'rgba(212, 164, 58, 0.6)';
+  ctx.beginPath();
+  ctx.moveTo(0, -18);
+  ctx.lineTo(5, 0);
+  ctx.lineTo(-5, 0);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.fillStyle = 'rgba(120, 190, 255, 0.3)';
+  ctx.beginPath();
+  ctx.moveTo(0, 18);
+  ctx.lineTo(4, 0);
+  ctx.lineTo(-4, 0);
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
+
+  // 6) 우측 하단 기억의 조각 입자 시뮬레이션
+  drawMemoryShardParticles(ctx, w, h);
+}
+
+function drawMemoryShardParticles(ctx, w, h){
+  const shardCount = visitedNodes.size + (currentNodeId ? 1 : 0);
+  const time = performance.now() * 0.0015;
+  const baseCenterX = w - 80;
+  const baseCenterY = h - 50;
+
+  // 조각 개수만큼 다이아몬드 파편을 공전시킴
+  for(let i = 0; i < shardCount; i++){
+    const angle = (i * (Math.PI * 2 / 8)) + time * 0.5;
+    const px = baseCenterX + Math.cos(angle) * 26;
+    const py = baseCenterY + Math.sin(angle) * 16;
+
+    ctx.save();
+    ctx.translate(px, py);
+    ctx.rotate(time + i);
+
+    // 파편 다이아몬드
+    ctx.fillStyle = 'rgba(212, 164, 58, 0.85)';
+    ctx.beginPath();
+    ctx.moveTo(0, -5);
+    ctx.lineTo(3.5, 0);
+    ctx.lineTo(0, 5);
+    ctx.lineTo(-3.5, 0);
+    ctx.closePath();
+    ctx.fill();
+
+    // 잔광 효과
+    ctx.strokeStyle = 'rgba(255, 230, 120, 0.35)';
+    ctx.lineWidth = 0.5;
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  // 기억 수집 용기 데코
+  ctx.strokeStyle = 'rgba(212, 164, 58, 0.25)';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.arc(baseCenterX, baseCenterY, 32, 0, Math.PI*2);
+  ctx.stroke();
+}
+
+function toggleMap(){
+  const drawer = document.getElementById('map-drawer');
+  mapOpen = !mapOpen;
+  drawer.classList.toggle('open', mapOpen);
+  if(mapOpen){
+    setTimeout(resizeMapCanvas, 650);
+  }
+}
+
+function flashMapDrawer(){
+  const drawer = document.getElementById('map-drawer');
+  const tab = document.getElementById('map-tab');
+  tab.style.transition = 'background 0.3s ease';
+  tab.style.background = 'rgba(212, 164, 58, 0.15)';
+  setTimeout(() => {
+    tab.style.background = '';
+    if(!mapOpen){
+      drawer.classList.add('open');
+      setTimeout(() => {
+        resizeMapCanvas();
+        setTimeout(() => {
+          // 3초 후 닫힘 연동 제거하여 사용자가 지도를 자유롭게 감상할 수 있도록 유도
+        }, 3000);
+      }, 650);
+    }
+  }, 400);
+}
+
+let tooltipEl = null;
+function showMapTooltip(anchorEl, node){
+  hideMapTooltip();
+  tooltipEl = document.createElement('div');
+  tooltipEl.style.cssText = `
+    position:fixed; z-index:200;
+    background: rgba(3, 8, 22, 0.96);
+    border: 1px solid rgba(212, 164, 58, 0.35);
+    padding: 10px 16px; border-radius: 4px; pointer-events: none;
+    backdrop-filter: blur(15px);
+    box-shadow: 0 5px 25px rgba(0,0,0,0.7);
+  `;
+  tooltipEl.innerHTML = `
+    <div style="font-family:var(--font-sans); font-size:7px; letter-spacing:0.3em; color:var(--gold-core); text-transform:uppercase; margin-bottom:4px">${node.sid}</div>
+    <div style="font-family:var(--font-serif); font-size:12px; color:#fff; font-weight:700; letter-spacing:0.04em">${node.name}</div>
+    <div style="font-family:var(--font-serif); font-size:10px; color:rgba(220, 235, 255, 0.6); font-style:italic; margin-top:4px">${node.desc}</div>
+  `;
+  document.body.appendChild(tooltipEl);
+  const r = anchorEl.getBoundingClientRect();
+  tooltipEl.style.left = (r.left + r.width / 2 - tooltipEl.offsetWidth / 2) + 'px';
+  tooltipEl.style.top = (r.top - tooltipEl.offsetHeight - 10) + 'px';
+}
+
+function hideMapTooltip(){
+  if(tooltipEl){ tooltipEl.remove(); tooltipEl = null; }
+}
+
+window.mapInit = initMap;
+window.mapToggle = toggleMap;
+window.mapInitialized_reset = function(){
+  visitedNodes.clear();
+  currentNodeId = null;
+  mapOpen = false;
+  mapInitialized = false;
+  document.getElementById('map-drawer').classList.remove('open');
+  initMap();
+};
+
+})();
+
+/* ══════════════════════════════════
+   EMBER RITUAL & PARCHMENT MAP REVEAL
+   - S0 종료 시 불씨 터치 의식 및 지도 각성 세션
+   ══════════════════════════════════ */
+(function(){
+  let cv = null;
+  let ctx = null;
+  let t = 0;
+
+  window._ritualState = { emberIntensity: 0, exploding: false, explodeProgress: 0, clickable: false, active: false };
+
+  function drawRitualEmber(time){
+    if(!cv) {
+      cv = document.getElementById('ritual-ember-cv');
+      if(cv) {
+        ctx = cv.getContext('2d');
+        cv.width = 120; cv.height = 120;
+      }
+    }
+    if(!cv || !ctx) return;
+    
+    ctx.clearRect(0,0,120,120);
+    const cx = 60, cy = 60;
+    const pulse = (Math.sin(time * 2.2) + 1) / 2;
+    const intensity = window._ritualState.emberIntensity;
+
+    if(window._ritualState.exploding){
+      const ep = window._ritualState.explodeProgress;
+      const burst = ctx.createRadialGradient(cx, cy, 0, cx, cy, Math.max(0.01, 60 * ep));
+      burst.addColorStop(0, `rgba(255, 240, 180, ${1 - ep})`);
+      burst.addColorStop(0.3, `rgba(255, 150, 40, ${(1 - ep) * 0.75})`);
+      burst.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = burst;
+      ctx.fillRect(0,0,120,120);
+      return;
+    }
+
+    // 외곽 아우라 맥동
+    const glow = ctx.createRadialGradient(cx, cy, 0, cx, cy, 40 + intensity * 15);
+    glow.addColorStop(0, `rgba(240, 130, 30, ${0.28 + pulse * 0.12 + intensity * 0.4})`);
+    glow.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = glow;
+    ctx.fillRect(0,0,120,120);
+
+    // 내부 다이아몬드 황금 핵
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(time * 0.4);
+    const coreGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, 8 + pulse * 4);
+    coreGrad.addColorStop(0, '#fff');
+    coreGrad.addColorStop(0.5, '#ECC96A');
+    coreGrad.addColorStop(1, 'rgba(212, 164, 58, 0)');
+    ctx.fillStyle = coreGrad;
+    ctx.beginPath();
+    ctx.moveTo(0, -10 - pulse * 3);
+    ctx.lineTo(7 + pulse * 2, 0);
+    ctx.lineTo(0, 10 + pulse * 3);
+    ctx.lineTo(-7 - pulse * 2, 0);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+  }
+
+  function ritualLoop(){
+    t += 0.016;
+    if(!window._ritualState.exploding) window._ritualState.emberIntensity *= 0.96;
+    drawRitualEmber(t);
+    if(window._ritualState.active) requestAnimationFrame(ritualLoop);
+  }
+
+  window._startRitualLoop = function(){
+    window._ritualState.active = true;
+    ritualLoop();
+  };
+  window._stopRitualLoop = function(){
+    window._ritualState.active = false;
+  };
+})();
+
+function startEmberOverlayRitual(onComplete){
+  const ritual = document.getElementById('ember-ritual');
+  const dark = document.getElementById('ritual-dark');
+  const hint = document.getElementById('ritual-hint');
+  const cv = document.getElementById('ritual-ember-cv');
+
+  ritual.classList.add('active');
+  window._ritualState.active = true;
+  window._ritualState.clickable = false;
+  window._ritualState.exploding = false;
+  window._startRitualLoop();
+
+  // 1단계: 암전
+  requestAnimationFrame(() => { dark.classList.add('on'); });
+
+  // 2단계: 작은 고아 불씨 노출 (딜레이 2.5초)
+  setTimeout(() => {
+    const r = document.getElementById('ritual-ember');
+    if(r){
+      r.classList.add('show');
+    }
+  }, 2500);
+
+  // 3단계: 클릭 활성화 유도 (딜레이 4.5초)
+  setTimeout(() => {
+    hint.classList.add('show');
+    window._ritualState.clickable = true;
+
+    function onRitualClick(){
+      const r = document.getElementById('ritual-ember');
+      if(r) r.removeEventListener('click', onRitualClick);
+      if(cv) cv.removeEventListener('click', onRitualClick);
+      hint.classList.remove('show');
+      window._ritualState.clickable = false;
+      executeRitualExplosion(ritual, dark, onComplete);
+    }
+
+    if(cv){
+      cv.addEventListener('mouseenter', () => { window._ritualState.emberIntensity = 0.8; });
+      cv.addEventListener('mouseleave', () => { window._ritualState.emberIntensity = 0.2; });
+      cv.addEventListener('click', onRitualClick);
+    }
+    const r = document.getElementById('ritual-ember');
+    if(r) r.addEventListener('click', onRitualClick);
+  }, 4500);
+}
+
+function executeRitualExplosion(ritual, dark, onComplete){
+  window._ritualState.exploding = true;
+  const burst = document.getElementById('ritual-burst');
+  const startTime = performance.now();
+
+  function animExplode(now){
+    const ep = Math.min((now - startTime) / 700, 1);
+    window._ritualState.explodeProgress = ep;
+
+    // 플래시 황금빛 팽창
+    dark.style.background = `rgba(${Math.floor(ep * 255)}, ${Math.floor(ep * 220)}, ${Math.floor(ep * 140)}, ${1 - ep * 0.3})`;
+    burst.style.background = `radial-gradient(circle at 50% 50%, rgba(255,255,255,${1-ep}) 0%, rgba(212,164,58,${(1-ep)*0.8}) 30%, rgba(240,110,20,${(1-ep)*0.3}) 60%, transparent 80%)`;
+    burst.classList.add('on');
+
+    if(ep < 1){
+      requestAnimationFrame(animExplode);
+    } else {
+      setTimeout(() => {
+        window._stopRitualLoop();
+        burst.style.background = '#fff'; // 순백의 대폭발
+        setTimeout(() => {
+          ritual.classList.remove('active');
+          burst.style.background = '';
+          burst.classList.remove('on');
+          revealParchmentMapScene(onComplete);
+        }, 200);
+      }, 250);
+    }
+  }
+  requestAnimationFrame(animExplode);
+}
+
+/* ─── 양피지 지도 공개 ─── */
+function revealParchmentMapScene(onComplete){
+  const overlay = document.getElementById('parchment-overlay');
+  const wrap = document.getElementById('parchment-wrap');
+  const canvas = document.getElementById('parchment-canvas');
+  const dust = document.getElementById('parchment-dust');
+  const title = document.getElementById('parchment-title');
+  const cont = document.getElementById('parchment-continue');
+
+  overlay.classList.add('active');
+
+  const w = Math.min(720, window.innerWidth * 0.9);
+  const h = Math.min(360, window.innerHeight * 0.42);
+  wrap.style.width = w + 'px';
+  wrap.style.height = h + 'px';
+  canvas.width = w;
+  canvas.height = h;
+  dust.width = w;
+  dust.height = h;
+
+  // 펼쳐지는 느낌 연출
+  wrap.style.transition = 'none';
+  wrap.style.transform = 'scaleX(0)';
+  wrap.style.opacity = '0';
+
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      wrap.style.transition = 'transform 2s cubic-bezier(0.19, 1, 0.22, 1), opacity 0.8s ease';
+      wrap.style.transform = 'scaleX(1)';
+      wrap.style.opacity = '1';
+    });
+  });
+
+  // 잉크 스케치 애니메이션 전개
+  setTimeout(() => {
+    inkDrawAnim(canvas, w, h, () => {
+      title.classList.add('show');
+      window._startDustMapVfx(w, h);
+      setTimeout(() => {
+        cont.classList.add('show');
+        cont.addEventListener('click', function once(){
+          cont.removeEventListener('click', once);
+          closeParchmentOverlay(overlay, wrap, onComplete);
+        });
+      }, 1000);
+    });
+  }, 1800);
+}
+
+/* 잉크가 흘러 번지는 느낌의 고풍스러운 드로잉 효과 */
+function inkDrawAnim(cv, W, H, onDone){
+  const ctx = cv.getContext('2d');
+  const startTime = performance.now();
+  const dur = 3000;
+  const centerY = H * 0.5;
+
+  const nodes = [
+    { name: '집', x: 0.1, icon: '🕯' },
+    { name: '눈의 숲', x: 0.28, icon: '🌲' },
+    { name: '얼음 마을', x: 0.46, icon: '🏮' },
+    { name: '따뜻한 집', x: 0.62, icon: '🏠' },
+    { name: '빛의 탑', x: 0.78, icon: '🗼' },
+    { name: '마지막 문', x: 0.92, icon: '✦' }
+  ];
+
+  function easeOut(t) { return 1 - Math.pow(1 - t, 3); }
+
+  function renderDraw(now){
+    const t = easeOut(Math.min((now - startTime) / dur, 1));
+    ctx.clearRect(0,0,W,H);
+
+    // 잉크 번짐 효과 배경 얼룩
+    ctx.fillStyle = 'rgba(212, 164, 58, 0.03)';
+    ctx.beginPath();
+    ctx.arc(W * 0.3, centerY, Math.max(0.01, 80 * t), 0, Math.PI*2);
+    ctx.arc(W * 0.7, centerY, Math.max(0.01, 100 * t), 0, Math.PI*2);
+    ctx.fill();
+
+    const startX = nodes[0].x * W;
+    const endX = nodes[nodes.length-1].x * W;
+    const currentX = startX + (endX - startX) * t;
+
+    // 경로선 잉크 번짐 선두
+    ctx.beginPath();
+    ctx.moveTo(startX, centerY);
+    ctx.lineTo(currentX, centerY);
+    ctx.strokeStyle = 'rgba(212, 164, 58, 0.35)';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    // 노드 발견 순차적 잉크 피어남
+    nodes.forEach((n, i) => {
+      const nx = n.x * W;
+      const progressThresh = i / nodes.length;
+      if(t > progressThresh){
+        const scale = Math.min((t - progressThresh) * 6, 1);
+        ctx.save();
+        ctx.globalAlpha = scale;
+        
+        ctx.fillStyle = 'rgba(15, 10, 5, 0.9)';
+        ctx.strokeStyle = 'rgba(212, 164, 58, 0.6)';
+        ctx.lineWidth = 1;
+        
+        ctx.beginPath();
+        ctx.arc(nx, centerY, 11, 0, Math.PI*2);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.font = '8px sans-serif';
+        ctx.fillStyle = '#ECC96A';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(n.icon, nx, centerY);
+
+        ctx.font = '300 9px "Noto Serif KR"';
+        ctx.fillStyle = 'rgba(255,255,255,0.7)';
+        ctx.fillText(n.name, nx, centerY + 22);
+        ctx.restore();
+      }
+    });
+
+    if(t < 1) requestAnimationFrame(renderDraw);
+    else onDone();
+  }
+  requestAnimationFrame(renderDraw);
+}
+
+function closeParchmentOverlay(overlay, wrap, onComplete){
+  window._stopDustMapVfx();
+  wrap.style.transition = 'transform 0.8s cubic-bezier(0.75, 0, 0.85, 0), opacity 0.6s ease';
+  wrap.style.transform = 'scaleX(0)';
+  wrap.style.opacity = '0';
+
+  overlay.style.transition = 'background 0.9s ease';
+  overlay.style.background = 'rgba(0,0,0,0)';
+
+  setTimeout(() => {
+    overlay.classList.remove('active');
+    overlay.style.background = '';
+    
+    // 서랍 스무스하게 튀어나왔다 들어가며 인지
+    const drawer = document.getElementById('map-drawer');
+    if(drawer){
+      drawer.classList.add('open');
+      setTimeout(() => { drawer.classList.remove('open'); }, 2600);
+    }
+    onComplete();
+  }, 950);
+}
+
+/* ─── 양피지 지도 부유 먼지 이펙트 ─── */
+(function(){
+  let dustParticles = [];
+  let active = false;
+  let cv = null;
+  let ctx = null;
+
+  function createDust(w, h){
+    return Array.from({ length: 40 }, () => ({
+      x: Math.random() * w,
+      y: Math.random() * h,
+      vx: (Math.random() - 0.5) * 0.3,
+      vy: -Math.random() * 0.4 - 0.1,
+      r: Math.random() * 1.5 + 0.3,
+      life: Math.random() * 0.6 + 0.4,
+      maxLife: Math.random() * 0.6 + 0.4
+    }));
+  }
+
+  function loop(){
+    if(!cv) {
+      cv = document.getElementById('parchment-dust');
+      if(cv) ctx = cv.getContext('2d');
+    }
+    if(!cv || !ctx || !active) return;
+    
+    ctx.clearRect(0,0,cv.width,cv.height);
+
+    dustParticles.forEach(p => {
+      // 덧셈 연산 오류 수정: p.x += p.vx (p.x += p.x...로 되어 있어 값이 기하급수적으로 폭증하여 뻗는 에러 해결)
+      p.x += p.vx;
+      p.y += p.vy;
+      p.life -= 0.005;
+      if(p.life <= 0){
+        p.x = Math.random() * cv.width;
+        p.y = cv.height + 5;
+        p.life = p.maxLife;
+      }
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+      ctx.fillStyle = `rgba(212, 164, 58, ${(p.life / p.maxLife) * 0.35})`;
+      ctx.fill();
+    });
+    if(active) requestAnimationFrame(loop);
+  }
+
+  window._startDustMapVfx = function(w, h){
+    active = true;
+    dustParticles = createDust(w, h);
+    loop();
+  };
+  window._stopDustMapVfx = function(){
+    active = false;
+  };
+})();
+
+/* ══════════════════════════════════
+   TITLE WINDOW BACKGROUND ANIMATION
+   - 타이틀 화면의 눈보라 및 탑 렌더러
+   ══════════════════════════════════ */
+(function(){
+  const cv = document.getElementById('title-canvas');
+  if(!cv) return;
+  const ctx = cv.getContext('2d');
+
+  function resize(){
+    cv.width = window.innerWidth;
+    cv.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  let t = 0;
+
+  // 별빛
+  const stars = Array.from({ length: 150 }, () => ({
+    x: Math.random(), y: Math.random() * 0.65,
+    r: Math.random() * 0.7 + 0.2,
+    o: Math.random() * 0.5 + 0.05,
+    twinkle: Math.random() * Math.PI * 2
+  }));
+
+  // 눈송이
+  const flakes = Array.from({ length: 120 }, () => ({
+    x: Math.random() * 1.5, y: Math.random(),
+    vy: Math.random() * 0.001 + 0.0003,
+    vx: Math.random() * 0.0008 + 0.0002,
+    r: Math.random() * 2.0 + 0.4,
+    o: Math.random() * 0.45 + 0.05
+  }));
+
+  function drawTowerDecor(w, h, time){
+    const tw = w * 0.06;
+    const tx = (w - tw) / 2;
+    const pulse = (Math.sin(time * 0.6) + 1) / 2;
+
+    // 탑 실루엣
+    const tg = ctx.createLinearGradient(tx, 0, tx + tw, 0);
+    tg.addColorStop(0, '#03050a');
+    tg.addColorStop(0.5, '#0a0d16');
+    tg.addColorStop(1, '#03050a');
+    ctx.fillStyle = tg;
+    ctx.fillRect(tx, h * 0.15, tw, h * 0.7);
+
+    // 하늘로 솟구치는 황금 수직 광선
+    const beam = ctx.createLinearGradient(w/2 - 2, 0, w/2 + 2, h * 0.6);
+    beam.addColorStop(0, `rgba(212, 164, 58, ${0.45 + pulse * 0.15})`);
+    beam.addColorStop(0.4, `rgba(180, 120, 30, ${0.18 + pulse * 0.08})`);
+    beam.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = beam;
+    ctx.fillRect(w/2 - 3, 0, 6, h * 0.65);
+
+    // 정상 광휘 아우라
+    const aura = ctx.createRadialGradient(w/2, h * 0.15, 0, w/2, h * 0.15, w * 0.3);
+    aura.addColorStop(0, `rgba(255, 215, 100, ${0.28 + pulse * 0.15})`);
+    aura.addColorStop(0.5, `rgba(180, 110, 20, 0.05)`);
+    aura.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = aura;
+    ctx.fillRect(0, 0, w, h * 0.5);
+  }
+
+  function drawFigures(w, h){
+    const base = h * 0.82;
+    const cx = w * 0.5;
+    ctx.fillStyle = '#010307';
+    // 윤 실루엣
+    ctx.beginPath(); ctx.ellipse(cx - 24, base - 28, 4.5, 15, 0, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(cx - 24, base - 46, 6.5, 0, Math.PI*2); ctx.fill();
+    // 새벽 실루엣
+    ctx.beginPath(); ctx.ellipse(cx + 12, base - 22, 3.8, 12, 0, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(cx + 12, base - 38, 5.5, 0, Math.PI*2); ctx.fill();
+    
+    // 맞잡은 손
+    ctx.beginPath(); ctx.moveTo(cx - 19, base - 26); ctx.lineTo(cx + 8, base - 20);
+    ctx.strokeStyle = '#010307'; ctx.lineWidth = 2.5; ctx.stroke();
+  }
+
+  function loop(){
+    t += 0.016;
+    const w = cv.width, h = cv.height;
+    ctx.clearRect(0,0,w,h);
+
+    // 밤하늘
+    const bg = ctx.createLinearGradient(0,0,0,h);
+    bg.addColorStop(0, '#02050f');
+    bg.addColorStop(0.5, '#03081a');
+    bg.addColorStop(1, '#010308');
+    ctx.fillStyle = bg;
+    ctx.fillRect(0,0,w,h);
+
+    // 은은한 청색 여명 광휘
+    const aurora = ctx.createRadialGradient(w*0.5, 0, 0, w*0.5, h*0.25, w*0.5);
+    aurora.addColorStop(0, `rgba(40, 80, 180, ${0.07 + Math.sin(t*0.2)*0.03})`);
+    aurora.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = aurora;
+    ctx.fillRect(0,0,w,h);
+
+    // 별
+    stars.forEach(s => {
+      const tw = (Math.sin(t * 0.7 + s.twinkle) + 1) / 2;
+      ctx.beginPath();
+      ctx.arc(s.x * w, s.y * h, s.r, 0, Math.PI*2);
+      ctx.fillStyle = `rgba(220, 230, 255, ${s.o * 0.4 + tw * s.o * 0.5})`;
+      ctx.fill();
+    });
+
+    // 산맥
+    ctx.beginPath();
+    ctx.moveTo(0, h * 0.68);
+    ctx.lineTo(w * 0.15, h * 0.5);
+    ctx.lineTo(w * 0.35, h * 0.6);
+    ctx.lineTo(w * 0.5, h * 0.44);
+    ctx.lineTo(w * 0.65, h * 0.56);
+    ctx.lineTo(w * 0.8, h * 0.42);
+    ctx.lineTo(w, h * 0.6);
+    ctx.lineTo(w, h);
+    ctx.lineTo(0, h);
+    ctx.closePath();
+    ctx.fillStyle = '#020409';
+    ctx.fill();
+
+    drawTowerDecor(w, h, t);
+    drawFigures(w, h);
+
+    // 눈 내림
+    flakes.forEach(f => {
+      f.y += f.vy;
+      f.x += f.vx + Math.sin(t * 0.5) * 0.0001;
+      if(f.y > 1) { f.y = -0.02; f.x = Math.random() * 1.5; }
+      if(f.x > 1.5) f.x = -0.1;
+
+      ctx.beginPath();
+      ctx.arc(f.x * w, f.y * h, f.r, 0, Math.PI*2);
+      ctx.fillStyle = `rgba(215, 235, 255, ${f.o * 0.8})`;
+      ctx.fill();
+    });
+
+    // 비네트 그림자
+    const vign = ctx.createLinearGradient(0, h * 0.8, 0, h);
+    vign.addColorStop(0, 'rgba(1, 3, 7, 0)');
+    vign.addColorStop(1, '#010307');
+    ctx.fillStyle = vign;
+    ctx.fillRect(0, h*0.8, w, h*0.2);
+
+    requestAnimationFrame(loop);
+  }
+  loop();
+})();
+
+/* ══════════════════════════════════
+   GLOBAL STAGE SNOW PARTICLE SYSTEM
+   - 게임 플레이 시 화면과 좌측 영상 공간을 포근하게 덮는 패럴랙스 눈보라
+   ══════════════════════════════════ */
+(function(){
+  const cv = document.getElementById('snow-cv');
+  const c = cv.getContext('2d');
+
+  function resize(){
+    cv.width = window.innerWidth;
+    cv.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  const particles = Array.from({ length: 280 }, () => ({
+    x: Math.random() * innerWidth,
+    y: Math.random() * innerHeight,
+    r: Math.random() * 2.5 + 0.3,
+    vy: Math.random() * 1.5 + 0.4,
+    vx: (Math.random() - 0.2) * 1.8, // 오른쪽 바람 편향
+    o: Math.random() * 0.35 + 0.05,
+    wobble: Math.random() * Math.PI * 2,
+    wobbleSpeed: Math.random() * 0.02 + 0.01,
+    depth: Math.random() // 원근감 필터용 깊이 값
+  }));
+
+  let frame = 0;
+  const WIND = 0.8;
+
+  function animate(){
+    c.clearRect(0, 0, cv.width, cv.height);
+    const density = Math.min(particles.length, snowDensity * 2);
+    const active = particles.slice(0, density);
+
+    active.forEach(p => {
+      p.wobble += p.wobbleSpeed;
+      const wave = Math.sin(frame * 0.004) * 0.5 + Math.sin(frame * 0.008) * 0.2;
+      p.y += p.vy;
+      p.x += p.vx + WIND + wave + Math.sin(p.wobble) * 0.35;
+
+      if(p.y > cv.height + 10){
+        p.y = -10;
+        p.x = Math.random() * cv.width * 1.4 - cv.width * 0.2;
+      }
+      if(p.x > cv.width + 20) p.x = -20;
+      if(p.x < -20) p.x = cv.width + 20;
+
+      const alpha = p.depth < 0.4 ? p.o * 1.4 : p.o * 0.7;
+
+      if(p.r > 1.8){
+        const grad = c.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r * 2);
+        grad.addColorStop(0, `rgba(235, 245, 255, ${alpha})`);
+        grad.addColorStop(0.5, `rgba(200, 220, 245, ${alpha * 0.5})`);
+        grad.addColorStop(1, 'rgba(255,255,255,0)');
+        c.fillStyle = grad;
+        c.beginPath();
+        c.arc(p.x, p.y, p.r * 2, 0, Math.PI*2);
+        c.fill();
+      } else {
+        c.fillStyle = `rgba(220, 235, 255, ${alpha})`;
+        c.beginPath();
+        c.arc(p.x, p.y, p.r, 0, Math.PI*2);
+        c.fill();
+      }
+    });
+
+    frame++;
+    requestAnimationFrame(animate);
+  }
+  animate();
+})();
+</script>
+</body>
+</html>
