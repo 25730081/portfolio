@@ -2362,6 +2362,12 @@ function showEnding(sc){
   document.getElementById('e-text').innerHTML = sc.text.replace(/\n/g, '<br>');
   es.classList.add('on');
 
+  /* 텍스트 박스 처음엔 숨김 → 10초 후 페이드인 */
+  const inner = es.querySelector('.e-inner');
+  inner.style.opacity = '0';
+  inner.style.transition = 'opacity 1.5s ease';
+  setTimeout(() => { inner.style.opacity = '1'; }, 10000);
+
   /* 엔딩 영상 표시 */
   const endVideoMap = {
     'true': 'end-true-video',
