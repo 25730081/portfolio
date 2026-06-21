@@ -1513,7 +1513,7 @@ const SC = {
           <span class="char-avatar-symbol">S</span>
         </div>
         <div class="dlg-body">
-          <p class="spk" style="color:var(--ice-bright)">새벽 (윤에게 작게)</p>
+          <p class="spk" style="color:var(--ice-bright)">새벽 (해온에게 작게)</p>
           <div class="speech"><p>"그래도... 만약에 진짜면 어떡해?"</p></div>
         </div>
       </div>`,
@@ -2195,6 +2195,12 @@ function showEnding(sc){
   ['s0-video','s1-video','s2-video','s3-video','s4-video','s41-video','s5-video','s6-video'].forEach(id => {
     const el = document.getElementById(id);
     if(el){ el.muted = true; el.volume = 0; el.pause(); }
+  });
+
+  // 엔딩으로 넘어가면 모든 씬 MP3 배경음도 정지 (S6 등에서 버튼 클릭 후 계속 재생되는 문제 방지)
+  ['opening-bgm','s0-bgm','s1-bgm','s2-bgm','s3-bgm','s4-bgm','s41-bgm','s5-bgm','s6-bgm'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el){ el.pause(); }
   });
 
   ['end-true-video','end-good-video','end-normal-video','end-bad-video'].forEach(id => {
